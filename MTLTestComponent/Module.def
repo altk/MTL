@@ -1,0 +1,4 @@
+LIBRARY MTLTestComponent
+EXPORTS
+    DllCanUnloadNow         PRIVATE
+    DllGetActivationFactory PRIVATE

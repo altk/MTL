@@ -2,8 +2,15 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="TestClass.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Module.def" />
   </ItemGroup>
 </Project>

@@ -5,78 +5,101 @@
 
 namespace mtl
 {
-	template <typename Interface>
+	template < typename Interface >
 	struct Cloaked : Interface {};
 
-	template <typename Interface>
+	template < typename Interface >
 	struct IsCloaked : std::false_type {};
 
-	template <typename Interface>
+	template < typename Interface >
 	struct IsCloaked<Cloaked<Interface>> : std::true_type{};
 
-	template < typename ... Interfaces >
-	class __declspec(novtable) RuntimeClass
-		: public IInspectable
-		, public Interfaces ...
+	template < typename Interface >
+	struct IInspectableTraits : Interface
 	{
-		template < typename ... Tail >
-		void CopyInterfaces(GUID * ids) throw();
-		template < typename End >
-		void CopyInterfaces<End>(GUID * ids) throw()
+		IInspectableTraits()
 		{
-			if (!IsCloaked<End>)
-			*ids = __uuidof(End);
+			if (std::is_base_of<IInspectable, Interface>::value)
+				return;
+			static_assert(L"Runtime class template can derived only Inspectable classes.");
 		}
-		template < typename Head, typename ... Tail >
-		void CopyInterfaces<Head, Tail...>(GUID * ids) throw()
-		{
-			
-		}
+	};
 
-		template < typename ... Tail >
-		constexpr unsigned CountInterfaces() throw();
-		template < typename End >
-		constexpr unsigned CountInterfaces<End>() throw()
+	template < typename Head, typename ... Tail>
+	class RuntimeClass
+		: public IInspectableTraits< Head >
+		, public RuntimeClass < Tail... >
+	{
+	protected:
+		void * QueryInterfaceImpl(GUID const & id) throw()
 		{
-			return 1;
+			if (__uuidof(Head) == id)
+			{
+				return this;
+			}
+			return RuntimeClass<Tail...>::QueryInterfaceImpl(id);
 		}
-		template < typename Head, typename ... Tail >
-		constexpr unsigned CountInterfaces<Head, Tail...>() throw()
+		void GetIidsImpl(GUID * ids) throw()
 		{
-			return !IsCloaked<Head>::value + CountInterfaces<Tail...>();
+			*ids++ = __uuidof(Head);
+			if (sizeof...(Tail) == 0)
+			{
+				return;
+			}
+			RuntimeClass<Tail...>::GetIidsImpl(ids);
 		}
+	public:
+		virtual STDMETHODIMP QueryInterface(GUID const & id, void ** object) throw() override
+		{
+			*object == nullptr;
+			*object = QueryInterfaceImpl(id);
+			if (nullptr == *object)
+			{
+				return E_NOINTERFACE;
+			}
+			static_cast<IInspectable*>(*object)->AddRef();
+			return S_OK;
+		}
+		virtual STDMETHODIMP GetIids(ULONG * count, GUID ** array) throw() override
+		{
+			*count = 2 + sizeof...(Tail);
+			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
+			if (nullptr == *array)
+			{
+				return E_OUTOFMEMORY;
+			}
+			GetIidsImpl(*array);
+			return S_OK;
+		}
+	};
 
-		template < typename ... Tail >
-		void * QueryInterfaceImpl(GUID const & id) throw();
-		template < typename End >
-		void * QueryInterfaceImpl<End>(GUID const & id) throw()
+	template < typename End >
+	class RuntimeClass<End>
+		: public IInspectable
+	{
+	protected:
+		ULONG m_references = 1;
+		RuntimeClass() throw(){}
+		virtual ~RuntimeClass() throw()
+		{}
+		void * QueryInterfaceImpl(GUID const & id) throw()
 		{
-			if (id == __uuidof(End) || id == __uuidof(IInspectable) || id == __uuidof(IUnknown))
+			if (__uuidof(IInspectable) == id)
 			{
 				return this;
 			}
 			return nullptr;
 		}
-		template < typename Head, typename ... Tail >
-		void * QueryInterfaceImpl<Head, Tail...>(GUID const & id) throw()
+		void GetIidsImpl(GUID * ids) throw()
 		{
-			if (id == __uuidof(Head) || id == __uuidof(IInspectable) || id == __uuidof(IUnknown))
-			{
-				return this;
-			}
-			return QueryInterfaceImpl<Tail>(id);
+			*ids = __uuidof(IInspectable);
 		}
-	protected:
-		ULONG m_references = 1;
-		RuntimeClass() throw() = default;
-		virtual ~RuntimeClass() throw()
-		{}
 	public:
-		virtual STDMETHODIMP_(ULONG) AddRef() throw() override
+		virtual STDMETHODIMP_(ULONG) AddRef() throw() override final
 		{
 			return InterlockedIncrement(&m_references);
 		}
-		virtual STDMETHODIMP_(ULONG) Release() throw() override
+		virtual STDMETHODIMP_(ULONG) Release() throw() override  final
 		{
 			auto const remaining = InterlockedDecrement(&m_references);
 			if (0 == remaining)
@@ -85,30 +108,10 @@ namespace mtl
 			}
 			return remaining;
 		}
-		virtual STDMETHODIMP QueryInterface(GUID const & id, void ** object) throw() override
+		virtual STDMETHODIMP GetTrustLevel(TrustLevel * trustLevel) throw() override final
 		{
-			*object = QueryInterfaceImpl<Interfaces...>(id);
-			if (nullptr == *object)
-			{
-				return E_NOINTERFACE;
-			}
-			static_cast<::IInspectable*>(*object)->AddRef();
+			*trustLevel = BaseTrust;
 			return S_OK;
-		}
-		virtual STDMETHODIMP GetIids(ULONG * count, GUID ** array) throw() override
-		{
-			*count = 0;
-			*array = nullptr;
-			unsigned const localCount = CountInterfaces<Interfaces ...>();
-			if (0 == localCount)
-			{
-				return S_OK;
-			}
-			auto localArray = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * localCount));
-			if (nullptr == localArray)
-			{
-				return E_OUTOFMEMORY;
-			}
 		}
 	};
 }
