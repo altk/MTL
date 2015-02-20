@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MTLSources", "MTLSources\MTLSources.vcxproj", "{B209E7E8-6D2E-4E8B-9792-61E16FFBE428}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MTLTestComponent", "MTLTestComponent\MTLTestComponent.vcxproj", "{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -27,6 +29,18 @@ Global
 		{B209E7E8-6D2E-4E8B-9792-61E16FFBE428}.Release|Win32.Build.0 = Release|Win32
 		{B209E7E8-6D2E-4E8B-9792-61E16FFBE428}.Release|x64.ActiveCfg = Release|x64
 		{B209E7E8-6D2E-4E8B-9792-61E16FFBE428}.Release|x64.Build.0 = Release|x64
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Debug|ARM.ActiveCfg = Debug|ARM
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Debug|ARM.Build.0 = Debug|ARM
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Debug|Win32.Build.0 = Debug|Win32
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Debug|x64.ActiveCfg = Debug|x64
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Debug|x64.Build.0 = Debug|x64
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Release|ARM.ActiveCfg = Release|ARM
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Release|ARM.Build.0 = Release|ARM
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Release|Win32.ActiveCfg = Release|Win32
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Release|Win32.Build.0 = Release|Win32
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Release|x64.ActiveCfg = Release|x64
+		{6516C798-8F57-4C1A-8B4C-B52BFC6F67F2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
