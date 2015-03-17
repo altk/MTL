@@ -1,0 +1,29 @@
+import "inspectable.idl";
+import "Windows.ApplicationModel.Background.idl";
+
+namespace RuntimeComponent
+{
+	runtimeclass TestBackgroundTask;
+
+	[exclusiveto(TestBackgroundTask)]
+	[version(1.0)]
+	[uuid(67214cd3-3c60-4844-aa3b-a234f99f3c47)]
+	interface ITestClass : IInspectable
+	{
+		[propget]
+		HRESULT Int([out, retval] INT32* result);
+
+		[propget]
+		HRESULT Str([out, retval] HSTRING* result);
+	};
+
+	[version(1.0)]
+	[activatable(1.0)]
+	[marshaling_behavior(agile)]
+	[threading(both)]
+	runtimeclass TestBackgroundTask
+	{
+		[default] interface Windows.ApplicationModel.Background.IBackgroundTask;
+		interface ITestClass;
+	};
+}
