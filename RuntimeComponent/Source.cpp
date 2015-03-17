@@ -20,7 +20,7 @@ public:
 			);
 	}
 
-	STDMETHODIMP Run(IBackgroundTaskInstance * task_instance) throw() override final
+	STDMETHODIMP Run(IBackgroundTaskInstance *) throw() override final
 	{
 		//Просто пишем строку в отладочное окно
 		OutputDebugStringW(L"Hello from background task.\r\n");
@@ -40,10 +40,10 @@ public:
 	}
 };
 
-class TestBackgroundTaskFactory sealed : public RuntimeClass < IActivationFactory, BypassIInspectableCheck<INoMarshal>, BypassIInspectableCheck<IAgileObject> >
+class TestBackgroundTaskFactory sealed : public RuntimeClass < IActivationFactory, BypassIInspectableCheck<IAgileObject> >
 {
 public:
-	STDMETHODIMP GetRuntimeClassName(HSTRING * className) throw() override final
+	STDMETHODIMP GetRuntimeClassName(HSTRING *) throw() override final
 	{
 		//Возвращаем данную константу, т.к. вызовается метод фабрики
 		return E_ILLEGAL_METHOD_CALL;
