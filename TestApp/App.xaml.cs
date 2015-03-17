@@ -36,9 +36,7 @@ namespace TestApp
         {
             var test = new TestBackgroundTask();
             var b = test.Int;
-            b++;
-            var s = test.Str;
-            b = int.Parse(s);
+            b += int.Parse(test.Str);
 
             test.Run(null);
 #if DEBUG

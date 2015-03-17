@@ -1,25 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <inspectable.h>
-#include <unordered_set>
 #include <type_traits>
-#include <cstdint>
-
-static_assert(sizeof(_GUID) == 128 / CHAR_BIT, "GUID");
-
-namespace std
-{
-	template<>
-	struct hash<GUID>
-	{
-		size_t operator()(const GUID& guid) const throw()
-		{
-			auto p = reinterpret_cast<const uint64_t*>(&guid);
-			hash<uint64_t> hash;
-			return hash(p[0]) ^ hash(p[1]);
-		}
-	};
-}
 
 namespace MTL
 {
@@ -32,17 +14,43 @@ namespace MTL
 	template < typename Interface >
 	struct IsCloaked<Cloaked<Interface>> : std::true_type{};
 
+	template < typename Interface>
+	struct BypassIInspectableCheck : Interface
+	{};
+
 	template < typename Interface >
 	struct IInspectableCheck : Interface
 	{
-		static_assert(std::is_base_of<IInspectable, Interface>::value, "You must specify only IInspectable interfaces");
+		static_assert(std::is_base_of<IInspectable, Interface>::value , "IInspectableCheck failed");
 	};
 
-	template <typename ... Interfaces >
-	class DECLSPEC_NOVTABLE RuntimeClass : public Interfaces ... 
+	template < typename Interface >
+	struct IInspectableCheck<BypassIInspectableCheck<Interface>> : BypassIInspectableCheck<Interface>
+	{
+
+	};
+
+	template < typename HeadInterface, typename ... TailInterfaces >
+	class DECLSPEC_NOVTABLE RuntimeClass
+		: public IInspectableCheck<HeadInterface>
+		, public IInspectableCheck<TailInterfaces> ...
 	{
 		ULONG m_references = 1;
-		static std::unordered_set<GUID> const m_iids;
+
+		template<typename Head, typename ... Tail>
+		void * QueryInterfaceImpl(GUID const & id) throw()
+		{
+			if (id == __uuidof(Head))
+			{
+				return static_cast<Head *>(this);
+			}
+			return QueryInterfaceImpl<Tail...>(id);
+		}
+		template < int = 0 >
+		void * QueryInterfaceImpl(GUID const &) throw()
+		{
+			return nullptr;
+		}
 
 		template<typename Head, typename ... Tail>
 		void GetIidsImpl(GUID * ids) throw()
@@ -61,23 +69,28 @@ namespace MTL
 	public:
 		STDMETHODIMP QueryInterface(GUID const & id, void ** object) throw() override final
 		{
-			if (m_iids.find(id) != m_iids.end())
+			if (id == __uuidof(HeadInterface) ||
+				id == __uuidof(IUnknown) ||
+				id == __uuidof(IInspectable))
 			{
-				*object = this;
-				static_cast<IInspectable*>(*object)->AddRef();
-				return S_OK;
+				*object = static_cast<HeadInterface *>(this);
 			}
-			return E_NOINTERFACE;
+			else if (nullptr == (*object = QueryInterfaceImpl<TailInterfaces...>(id)))
+			{
+				return E_NOINTERFACE;
+			}
+			static_cast<IUnknown *>(*object)->AddRef();
+			return S_OK;
 		}
 		STDMETHODIMP GetIids(ULONG * count, GUID ** array) throw() override final
 		{
-			*count = sizeof...(Interfaces);
+			*count = sizeof...(TailInterfaces)+1;
 			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
 			if (nullptr == *array)
 			{
 				return E_OUTOFMEMORY;
 			}
-			GetIidsImpl<Interfaces...>(*array);
+			GetIidsImpl<HeadInterface, TailInterfaces...>(*array);
 			return S_OK;
 		}
 		STDMETHODIMP_(ULONG) AddRef() throw() override final
@@ -99,7 +112,4 @@ namespace MTL
 			return S_OK;
 		}
 	};
-
-	template <typename ... Interfaces>
-	std::unordered_set<GUID> const RuntimeClass<Interfaces...>::m_iids = std::unordered_set<GUID>{ _uuidof(IUnknown), __uuidof(IInspectable), __uuidof(Interfaces)... };
 }

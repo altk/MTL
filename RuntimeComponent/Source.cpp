@@ -1,13 +1,14 @@
 ﻿#include "pch.h"
 #include "RuntimeComponent.h"
 #include "RuntimeClass.h"
+#include <ObjIdlbase.h>
 
 using namespace MTL;
 using namespace ABI::RuntimeComponent;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTask;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTaskInstance;
 
-class ABI::RuntimeComponent::TestBackgroundTask : public RuntimeClass<IBackgroundTask, ITestClass>
+class ABI::RuntimeComponent::TestBackgroundTask : public RuntimeClass < IBackgroundTask, ITestClass >
 {
 public:
 	STDMETHODIMP GetRuntimeClassName(HSTRING * className) throw() override final
@@ -39,7 +40,7 @@ public:
 	}
 };
 
-class TestBackgroundTaskFactory sealed : public RuntimeClass<IActivationFactory>
+class TestBackgroundTaskFactory sealed : public RuntimeClass < IActivationFactory, BypassIInspectableCheck<INoMarshal>, BypassIInspectableCheck<IAgileObject> >
 {
 public:
 	STDMETHODIMP GetRuntimeClassName(HSTRING * className) throw() override final
@@ -59,7 +60,7 @@ public:
 		}
 		//Создаём объект 
 		//При этом указываем признак того, что не надо генерировать исключение
-		*instance = reinterpret_cast<IBackgroundTask*>(new (std::nothrow) TestBackgroundTask());
+		*instance = reinterpret_cast<IInspectable*>(new (std::nothrow) TestBackgroundTask());
 
 		//Возвращаем результат в зависимости от успешности создания объекта
 		return *instance ? S_OK : E_OUTOFMEMORY;
