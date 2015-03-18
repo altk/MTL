@@ -3,9 +3,17 @@ import "Windows.ApplicationModel.Background.idl";
 
 namespace RuntimeComponent
 {
-	runtimeclass TestBackgroundTask;
+	runtimeclass TestClass;
 
-	[exclusiveto(TestBackgroundTask)]
+	[version(1.0)]
+	[uuid(aba6712e-a962-458c-8f2c-31617488a320)]
+	[exclusiveto(TestClass)]
+	interface ITestClassFactory : IInspectable
+	{
+		HRESULT ActivateInstance([in] INT32 value, [out, retval] TestClass** result);
+	};
+
+	[exclusiveto(TestClass)]
 	[version(1.0)]
 	[uuid(67214cd3-3c60-4844-aa3b-a234f99f3c47)]
 	interface ITestClass : IInspectable
@@ -18,12 +26,11 @@ namespace RuntimeComponent
 	};
 
 	[version(1.0)]
-	[activatable(1.0)]
+	[activatable(ITestClassFactory, 1.0)]
 	[marshaling_behavior(agile)]
 	[threading(both)]
-	runtimeclass TestBackgroundTask
+	runtimeclass TestClass
 	{
-		[default] interface Windows.ApplicationModel.Background.IBackgroundTask;
-		interface ITestClass;
+		[default] interface ITestClass;
 	};
 }

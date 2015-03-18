@@ -70,7 +70,7 @@ namespace MTL
 		}
 	protected:
 		RuntimeClass() throw() {}
-		virtual ~RuntimeClass() throw() {}
+		virtual ~RuntimeClass() throw()	{}
 	public:
 		STDMETHODIMP QueryInterface(GUID const & id, void ** object) throw() override final
 		{
@@ -118,4 +118,5 @@ namespace MTL
 			return S_OK;
 		}
 	};
+
 }

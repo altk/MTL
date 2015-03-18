@@ -34,18 +34,13 @@ namespace TestApp
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            var test = new TestBackgroundTask();
-            var b = test.Int;
-            b += int.Parse(test.Str);
 
-            test.Run(null);
 #if DEBUG
             if (Debugger.IsAttached)
             {
                 this.DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
-
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -75,8 +70,11 @@ namespace TestApp
                 // parameter
                 rootFrame.Navigate(typeof(MainPage), e.Arguments);
             }
+
             // Ensure the current window is active
             Window.Current.Activate();
+
+
         }
 
         /// <summary>
