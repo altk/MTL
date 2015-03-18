@@ -4,9 +4,9 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Wed Mar 18 14:18:35 2015
+/* at Wed Mar 18 17:29:39 2015
  */
-/* Compiler settings for C:\Users\vdronov\AppData\Local\Temp\RuntimeComponent.idl-35fbfd1a:
+/* Compiler settings for C:\Users\vdronov\AppData\Local\Temp\RuntimeComponent.idl-09976d47:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -86,6 +86,22 @@ namespace ABI {
 #endif 	/* ____x_ABI_CRuntimeComponent_CITestClass_FWD_DEFINED__ */
 
 
+#ifndef ____x_ABI_CRuntimeComponent_CITestClass2_FWD_DEFINED__
+#define ____x_ABI_CRuntimeComponent_CITestClass2_FWD_DEFINED__
+typedef interface __x_ABI_CRuntimeComponent_CITestClass2 __x_ABI_CRuntimeComponent_CITestClass2;
+
+#ifdef __cplusplus
+namespace ABI {
+    namespace RuntimeComponent {
+        interface ITestClass2;
+    } /* end namespace */
+} /* end namespace */
+
+#endif /* __cplusplus */
+
+#endif 	/* ____x_ABI_CRuntimeComponent_CITestClass2_FWD_DEFINED__ */
+
+
 /* header files for imported files */
 #include "inspectable.h"
 #include "Windows.ApplicationModel.Background.h"
@@ -143,8 +159,13 @@ EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClassFactory;
             ITestClassFactory : public IInspectable
             {
             public:
-                virtual HRESULT STDMETHODCALLTYPE ActivateInstance( 
+                virtual HRESULT STDMETHODCALLTYPE ActivateInstance0( 
                     /* [in] */ INT32 value,
+                    /* [out][retval] */ ABI::RuntimeComponent::ITestClass **result) = 0;
+                
+                virtual HRESULT STDMETHODCALLTYPE ActivateInstance1( 
+                    /* [in] */ INT32 value,
+                    /* [in] */ INT32 power,
                     /* [out][retval] */ ABI::RuntimeComponent::ITestClass **result) = 0;
                 
             };
@@ -187,9 +208,15 @@ EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClassFactory;
             __x_ABI_CRuntimeComponent_CITestClassFactory * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        HRESULT ( STDMETHODCALLTYPE *ActivateInstance )( 
+        HRESULT ( STDMETHODCALLTYPE *ActivateInstance0 )( 
             __x_ABI_CRuntimeComponent_CITestClassFactory * This,
             /* [in] */ INT32 value,
+            /* [out][retval] */ __x_ABI_CRuntimeComponent_CITestClass **result);
+        
+        HRESULT ( STDMETHODCALLTYPE *ActivateInstance1 )( 
+            __x_ABI_CRuntimeComponent_CITestClassFactory * This,
+            /* [in] */ INT32 value,
+            /* [in] */ INT32 power,
             /* [out][retval] */ __x_ABI_CRuntimeComponent_CITestClass **result);
         
         END_INTERFACE
@@ -225,8 +252,11 @@ EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClassFactory;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CRuntimeComponent_CITestClassFactory_ActivateInstance(This,value,result)	\
-    ( (This)->lpVtbl -> ActivateInstance(This,value,result) ) 
+#define __x_ABI_CRuntimeComponent_CITestClassFactory_ActivateInstance0(This,value,result)	\
+    ( (This)->lpVtbl -> ActivateInstance0(This,value,result) ) 
+
+#define __x_ABI_CRuntimeComponent_CITestClassFactory_ActivateInstance1(This,value,power,result)	\
+    ( (This)->lpVtbl -> ActivateInstance1(This,value,power,result) ) 
 
 #endif /* COBJMACROS */
 
@@ -385,10 +415,9 @@ EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClass;
 /* interface __MIDL_itf_RuntimeComponent_0000_0002 */
 /* [local] */ 
 
-#ifndef RUNTIMECLASS_RuntimeComponent_TestClass_DEFINED
-#define RUNTIMECLASS_RuntimeComponent_TestClass_DEFINED
-extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_RuntimeComponent_TestClass[] = L"RuntimeComponent.TestClass";
-#endif
+#if !defined(____x_ABI_CRuntimeComponent_CITestClass2_INTERFACE_DEFINED__)
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_RuntimeComponent_ITestClass2[] = L"RuntimeComponent.ITestClass2";
+#endif /* !defined(____x_ABI_CRuntimeComponent_CITestClass2_INTERFACE_DEFINED__) */
 
 
 /* interface __MIDL_itf_RuntimeComponent_0000_0002 */
@@ -398,6 +427,140 @@ extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_RuntimeC
 
 extern RPC_IF_HANDLE __MIDL_itf_RuntimeComponent_0000_0002_v0_0_c_ifspec;
 extern RPC_IF_HANDLE __MIDL_itf_RuntimeComponent_0000_0002_v0_0_s_ifspec;
+
+#ifndef ____x_ABI_CRuntimeComponent_CITestClass2_INTERFACE_DEFINED__
+#define ____x_ABI_CRuntimeComponent_CITestClass2_INTERFACE_DEFINED__
+
+/* interface __x_ABI_CRuntimeComponent_CITestClass2 */
+/* [uuid][object] */ 
+
+
+
+/* interface ABI::RuntimeComponent::ITestClass2 */
+/* [uuid][object] */ 
+
+
+EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClass2;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    } /* end extern "C" */
+    namespace ABI {
+        namespace RuntimeComponent {
+            
+            MIDL_INTERFACE("67214cd3-3c60-4844-aa3b-a234f99f3c49")
+            ITestClass2 : public IInspectable
+            {
+            public:
+                virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Long( 
+                    /* [out][retval] */ INT64 *result) = 0;
+                
+            };
+
+            extern const __declspec(selectany) IID & IID_ITestClass2 = __uuidof(ITestClass2);
+
+            
+        }  /* end namespace */
+    }  /* end namespace */
+    extern "C" { 
+    
+#else 	/* C style interface */
+
+    typedef struct __x_ABI_CRuntimeComponent_CITestClass2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __x_ABI_CRuntimeComponent_CITestClass2 * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __x_ABI_CRuntimeComponent_CITestClass2 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __x_ABI_CRuntimeComponent_CITestClass2 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIids )( 
+            __x_ABI_CRuntimeComponent_CITestClass2 * This,
+            /* [out] */ ULONG *iidCount,
+            /* [size_is][size_is][out] */ IID **iids);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetRuntimeClassName )( 
+            __x_ABI_CRuntimeComponent_CITestClass2 * This,
+            /* [out] */ HSTRING *className);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTrustLevel )( 
+            __x_ABI_CRuntimeComponent_CITestClass2 * This,
+            /* [out] */ TrustLevel *trustLevel);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Long )( 
+            __x_ABI_CRuntimeComponent_CITestClass2 * This,
+            /* [out][retval] */ INT64 *result);
+        
+        END_INTERFACE
+    } __x_ABI_CRuntimeComponent_CITestClass2Vtbl;
+
+    interface __x_ABI_CRuntimeComponent_CITestClass2
+    {
+        CONST_VTBL struct __x_ABI_CRuntimeComponent_CITestClass2Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define __x_ABI_CRuntimeComponent_CITestClass2_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define __x_ABI_CRuntimeComponent_CITestClass2_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define __x_ABI_CRuntimeComponent_CITestClass2_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define __x_ABI_CRuntimeComponent_CITestClass2_GetIids(This,iidCount,iids)	\
+    ( (This)->lpVtbl -> GetIids(This,iidCount,iids) ) 
+
+#define __x_ABI_CRuntimeComponent_CITestClass2_GetRuntimeClassName(This,className)	\
+    ( (This)->lpVtbl -> GetRuntimeClassName(This,className) ) 
+
+#define __x_ABI_CRuntimeComponent_CITestClass2_GetTrustLevel(This,trustLevel)	\
+    ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
+
+
+#define __x_ABI_CRuntimeComponent_CITestClass2_get_Long(This,result)	\
+    ( (This)->lpVtbl -> get_Long(This,result) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* ____x_ABI_CRuntimeComponent_CITestClass2_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_RuntimeComponent_0000_0003 */
+/* [local] */ 
+
+#ifndef RUNTIMECLASS_RuntimeComponent_TestClass_DEFINED
+#define RUNTIMECLASS_RuntimeComponent_TestClass_DEFINED
+extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_RuntimeComponent_TestClass[] = L"RuntimeComponent.TestClass";
+#endif
+
+
+/* interface __MIDL_itf_RuntimeComponent_0000_0003 */
+/* [local] */ 
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_RuntimeComponent_0000_0003_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_RuntimeComponent_0000_0003_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 

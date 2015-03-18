@@ -1,23 +1,30 @@
 ﻿#include "pch.h"
 #include "RuntimeComponent.h"
-#include "RuntimeClass.h"
-#include <ObjIdlbase.h>
-
+#include "MTL.h"
+#include <cmath>
 
 using namespace MTL;
 using namespace ABI::RuntimeComponent;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTask;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTaskInstance;
 
-class ABI::RuntimeComponent::TestClass : public RuntimeClass < ITestClass >
+class ABI::RuntimeComponent::TestClass : public RuntimeClass < ITestClass, ITestClass2 >
 {
 	INT32 value;
 public:
-	explicit TestClass(INT32 value_) throw()
-		: value(value_)
-	{}
+	TestClass() throw() : value()
+	{
+	}
 
-	STDMETHODIMP GetRuntimeClassName(HSTRING * className) throw() override final
+	explicit TestClass(INT32 value_) throw() : value(value_)
+	{
+	}
+
+	TestClass(INT32 value_, INT32 power_) throw() : value(std::pow(value_, power_))
+	{
+	}
+
+	STDMETHODIMP GetRuntimeClassName(HSTRING* className) throw() override final
 	{
 		return WindowsCreateString(
 			RuntimeClass_RuntimeComponent_TestClass,
@@ -26,53 +33,46 @@ public:
 			);
 	}
 
-	STDMETHODIMP get_Int(INT32 * result) throw() override final
+	STDMETHODIMP get_Int(INT32* result) throw() override final
 	{
 		*result = value;
 		return S_OK;
 	}
 
-	STDMETHODIMP get_Str(HSTRING * result) throw() override final
+	STDMETHODIMP get_Str(HSTRING* result) throw() override final
 	{
 		const WCHAR str[] = L"10";
 		return WindowsCreateString(str, _countof(str), result);
 	}
+
+	STDMETHODIMP get_Long(INT64* result)
+	{
+		*result = value;
+		return S_OK;
+	}
 };
 
-class TestClassFactory sealed : public RuntimeClass < ITestClassFactory, IAgileObject, Cloaked<IActivationFactory> >
+class TestClassFactory sealed : public ActivationFactory < ITestClassFactory >
 {
 public:
-	STDMETHODIMP GetRuntimeClassName(HSTRING *) throw() override final
+	STDMETHODIMP ActivateInstance(IInspectable** result)
 	{
-		//Возвращаем данную константу, т.к. вызовается метод фабрики
-		return E_ILLEGAL_METHOD_CALL;
+		return ActivateInstanceImpl<TestClass>(result);
 	}
 
-	STDMETHODIMP ActivateInstance(IInspectable **)
+	STDMETHODIMP ActivateInstance0(INT32 value, ITestClass** result) throw() override final
 	{
-		return E_NOTIMPL;
+		return ActivateInstanceImpl<TestClass>(result, value);
 	}
 
-	//Реализация IActivationFactory метода инстанциирования экземпляра
-	STDMETHODIMP ActivateInstance(INT32 value, ITestClass ** result) throw() override final
+	STDMETHODIMP ActivateInstance1(INT32 value, INT32 power, ITestClass** result) throw() override final
 	{
-		//Если указатель равено null
-		if (nullptr == result)
-		{
-			//Возвращаем ошибку
-			return E_INVALIDARG;
-		}
-		//Создаём объект 
-		//При этом указываем признак того, что не надо генерировать исключение
-		*result = new (std::nothrow) TestClass(value);
-
-		//Возвращаем результат в зависимости от успешности создания объекта
-		return *result ? S_OK : E_OUTOFMEMORY;
+		return ActivateInstanceImpl<TestClass>(result, value, power);
 	}
 };
 
 //Реализация экспортируемой функции получения фабрики объектов класса, имеющего идентификатор activatableClassId
-HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory **factory) throw()
+HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
 {
 	//Проверяем идентфикатор класса и указатель на фабрику
 	if (WindowsIsStringEmpty(activatableClassId) || nullptr == factory)
@@ -84,7 +84,7 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFa
 	if (0 == wcscmp(RuntimeClass_RuntimeComponent_TestClass, WindowsGetStringRawBuffer(activatableClassId, nullptr)))
 	{
 		//Инициализируем указатель
-		*factory = new (std::nothrow) TestClassFactory();
+		*factory = new(std::nothrow) TestClassFactory();
 		return *factory ? S_OK : E_OUTOFMEMORY;
 	}
 	*factory = nullptr;

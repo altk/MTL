@@ -10,7 +10,8 @@ namespace RuntimeComponent
 	[exclusiveto(TestClass)]
 	interface ITestClassFactory : IInspectable
 	{
-		HRESULT ActivateInstance([in] INT32 value, [out, retval] TestClass** result);
+		[overload("ActivateInstance")]HRESULT ActivateInstance0([in] INT32 value, [out, retval] TestClass** result);
+		[overload("ActivateInstance")]HRESULT ActivateInstance1([in] INT32 value, [in] INT32 power, [out, retval] TestClass** result);
 	};
 
 	[exclusiveto(TestClass)]
@@ -25,12 +26,24 @@ namespace RuntimeComponent
 		HRESULT Str([out, retval] HSTRING* result);
 	};
 
+
+	[exclusiveto(TestClass)]
 	[version(1.0)]
+	[uuid(67214cd3-3c60-4844-aa3b-a234f99f3c49)]
+	interface ITestClass2 : IInspectable
+	{
+		[propget]
+		HRESULT Long([out, retval] INT64* result);
+	};
+
+	[version(1.0)]
+	[activatable(1.0)]
 	[activatable(ITestClassFactory, 1.0)]
 	[marshaling_behavior(agile)]
 	[threading(both)]
 	runtimeclass TestClass
 	{
 		[default] interface ITestClass;
+		interface ITestClass2;
 	};
 }

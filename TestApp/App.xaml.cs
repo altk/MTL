@@ -34,7 +34,9 @@ namespace TestApp
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-
+            new TestClass();
+            new TestClass(1);
+            new TestClass(2, 3);
 #if DEBUG
             if (Debugger.IsAttached)
             {
