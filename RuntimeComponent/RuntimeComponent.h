@@ -4,9 +4,9 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Tue Mar 17 13:16:45 2015
+/* at Wed Mar 18 13:08:10 2015
  */
-/* Compiler settings for C:\Users\vdronov\AppData\Local\Temp\RuntimeComponent.idl-21ce538e:
+/* Compiler settings for C:\Users\vdronov\AppData\Local\Temp\RuntimeComponent.idl-919b8602:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 

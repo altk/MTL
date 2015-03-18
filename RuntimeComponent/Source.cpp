@@ -8,7 +8,9 @@ using namespace ABI::RuntimeComponent;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTask;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTaskInstance;
 
-class ABI::RuntimeComponent::TestBackgroundTask : public RuntimeClass < IBackgroundTask, ITestClass >
+struct ITest{};
+
+class ABI::RuntimeComponent::TestBackgroundTask : public RuntimeClass < IBackgroundTask, ITestClass, ITest >
 {
 public:
 	STDMETHODIMP GetRuntimeClassName(HSTRING * className) throw() override final
@@ -40,7 +42,7 @@ public:
 	}
 };
 
-class TestBackgroundTaskFactory sealed : public RuntimeClass < IActivationFactory, BypassIInspectableCheck<IAgileObject> >
+class TestBackgroundTaskFactory sealed : public RuntimeClass < IActivationFactory, IAgileObject >
 {
 public:
 	STDMETHODIMP GetRuntimeClassName(HSTRING *) throw() override final

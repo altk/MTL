@@ -14,33 +14,24 @@ namespace MTL
 	template < typename Interface >
 	struct IsCloaked<Cloaked<Interface>> : std::true_type{};
 
-	template < typename Interface>
-	struct BypassIInspectableCheck : Interface
-	{};
-
 	template < typename Interface >
-	struct IInspectableCheck : Interface
+	struct RuntimeClassCheck : Interface
 	{
-		static_assert(std::is_base_of<IInspectable, Interface>::value , "IInspectableCheck failed");
-	};
-
-	template < typename Interface >
-	struct IInspectableCheck<BypassIInspectableCheck<Interface>> : BypassIInspectableCheck<Interface>
-	{
-
+		static_assert(std::is_base_of<IUnknown, Interface>::value, "IUnknown check failed");
+		static_assert(std::is_base_of<IInspectable, Interface>::value || std::is_base_of<IUnknown, Interface>::value, "IInspectable check failed");
 	};
 
 	template < typename HeadInterface, typename ... TailInterfaces >
 	class DECLSPEC_NOVTABLE RuntimeClass
-		: public IInspectableCheck<HeadInterface>
-		, public IInspectableCheck<TailInterfaces> ...
+		: public RuntimeClassCheck<HeadInterface>
+		, public RuntimeClassCheck<TailInterfaces> ...
 	{
 		ULONG m_references = 1;
 
 		template<typename Head, typename ... Tail>
 		void * QueryInterfaceImpl(GUID const & id) throw()
 		{
-			if (id == __uuidof(Head))
+			if (!IsCloaked<Head>::value && id == __uuidof(Head))
 			{
 				return static_cast<Head *>(this);
 			}
@@ -55,13 +46,27 @@ namespace MTL
 		template<typename Head, typename ... Tail>
 		void GetIidsImpl(GUID * ids) throw()
 		{
-			*ids++ = __uuidof(Head);
-			GetIidsImpl<Tail...>(ids);
+			if (!IsCloaked<Head>::value)
+			{
+				*ids++ = __uuidof(Head);
+			}
+			GetIidsImpl<Tail ...>(ids);
 		}
 		template<int = 0>
 		void GetIidsImpl(GUID *) throw()
 		{
 			return;
+		}
+
+		template < typename Head, typename ... Tail >
+		SIZE_T CountInterfaces() throw()
+		{
+			return !IsCloaked<Head>::value + CountInterfaces<Tail...>();
+		}
+		template < int = 0 >
+		SIZE_T CountInterfaces() throw()
+		{
+			return 0;
 		}
 	protected:
 		RuntimeClass() throw() {}
@@ -84,13 +89,14 @@ namespace MTL
 		}
 		STDMETHODIMP GetIids(ULONG * count, GUID ** array) throw() override final
 		{
-			*count = sizeof...(TailInterfaces)+1;
+			*count = CountInterfaces<HeadInterface, TailInterfaces...>();
 			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
 			if (nullptr == *array)
 			{
 				return E_OUTOFMEMORY;
 			}
 			GetIidsImpl<HeadInterface, TailInterfaces...>(*array);
+
 			return S_OK;
 		}
 		STDMETHODIMP_(ULONG) AddRef() throw() override final
