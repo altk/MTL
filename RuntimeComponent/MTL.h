@@ -11,6 +11,9 @@ namespace MTL
 	template <typename HeadInterface, typename ... TailInterfaces>
 	class RuntimeClass;
 
+	template <typename FactoryInterface, typename RuntimeClassType >
+	class ActivationFactory;
+
 	class Module sealed
 	{
 		template <typename HeadInterface, typename ... TailInterfaces>
@@ -180,11 +183,11 @@ namespace MTL
 		}
 	};
 
-	template <typename FactoryInterface >
+	template <typename FactoryInterface, typename RuntimeClassType >
 	class DECLSPEC_NOVTABLE ActivationFactory : public RuntimeClass < FactoryInterface, IActivationFactory, IAgileObject >
 	{
 	protected:
-		template < typename RuntimeClassType, typename RuntimeClassInterface, typename ... Args>
+		template < typename RuntimeClassInterface, typename ... Args >
 		STDMETHODIMP ActivateInstanceImpl(RuntimeClassInterface** result, Args&& ... args) throw()
 		{
 			if (nullptr == result)
@@ -195,7 +198,7 @@ namespace MTL
 			return *result ? S_OK : E_OUTOFMEMORY;
 		}
 
-		template < typename RuntimeClassType, typename ... Args>
+		template < typename ... Args >
 		STDMETHODIMP ActivateInstanceImpl(IInspectable** result, Args&& ... args) throw()
 		{
 			if (nullptr == result)

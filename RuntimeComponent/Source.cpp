@@ -52,34 +52,38 @@ public:
 	}
 };
 
-class TestClassFactory sealed : public ActivationFactory < ITestClassFactory >
+class TestClassFactory sealed : public ActivationFactory < ITestClassFactory, TestClass >
 {
 public:
 	STDMETHODIMP ActivateInstance(IInspectable** result)
 	{
-		return ActivateInstanceImpl<TestClass>(result);
+		return ActivateInstanceImpl(result);
 	}
 
 	STDMETHODIMP ActivateInstance0(INT32 value, ITestClass** result) throw() override final
 	{
-		return ActivateInstanceImpl<TestClass>(result, value);
+		return ActivateInstanceImpl(result, value);
 	}
 
 	STDMETHODIMP ActivateInstance1(INT32 value, INT32 power, ITestClass** result) throw() override final
 	{
-		return ActivateInstanceImpl<TestClass>(result, value, power);
+		return ActivateInstanceImpl(result, value, power);
 	}
 };
 
 //Реализация экспортируемой функции получения фабрики объектов класса, имеющего идентификатор activatableClassId
 HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
 {
+	//*factory = nullptr;
+	BOOL hasEmbedNull;
+
 	//Проверяем идентфикатор класса и указатель на фабрику
-	if (WindowsIsStringEmpty(activatableClassId) || nullptr == factory)
+	if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
 	{
 		//Если идентификатор не задан или указатель нулевой
 		return E_INVALIDARG;
 	}
+
 	//Проверяем на равенство строки идентификатора класса и определенного нами класса
 	if (0 == wcscmp(RuntimeClass_RuntimeComponent_TestClass, WindowsGetStringRawBuffer(activatableClassId, nullptr)))
 	{
@@ -87,7 +91,8 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFa
 		*factory = new(std::nothrow) TestClassFactory();
 		return *factory ? S_OK : E_OUTOFMEMORY;
 	}
-	*factory = nullptr;
+	
+	//*factory = nullptr;
 	return E_NOINTERFACE;
 }
 
