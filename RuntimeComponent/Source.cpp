@@ -8,7 +8,7 @@ using namespace ABI::RuntimeComponent;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTask;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTaskInstance;
 
-class ABI::RuntimeComponent::TestClass : public RuntimeClass < ITestClass, ITestClass2 >
+class ABI::RuntimeComponent::TestClass sealed : public RuntimeClass < ITestClass, ITestClass2 >
 {
 	INT32 value;
 public:
@@ -93,5 +93,5 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFa
 
 HRESULT WINAPI DllCanUnloadNow() throw()
 {
-	return S_OK;
+	return Module::GetModule().CanUnload();
 }

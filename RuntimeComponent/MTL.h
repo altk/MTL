@@ -8,6 +8,42 @@
 
 namespace MTL
 {
+	template <typename HeadInterface, typename ... TailInterfaces>
+	class RuntimeClass;
+
+	class Module sealed
+	{
+		template <typename HeadInterface, typename ... TailInterfaces>
+		friend class RuntimeClass;
+
+		volatile ULONG m_objectCount;
+
+		Module() throw(){}
+
+		void IncrementObjectCount() throw()
+		{
+			InterlockedIncrement(&m_objectCount);
+		}
+
+		void DecrementObjectCount() throw()
+		{
+			InterlockedDecrement(&m_objectCount);
+		}
+
+	public:
+
+		static Module& GetModule() throw()
+		{
+			static Module singleton;
+			return singleton;
+		}
+
+		bool CanUnload() throw()
+		{
+			return m_objectCount == 0;
+		}
+	};
+
 	template <typename Interface>
 	struct Cloaked : Interface
 	{
@@ -35,7 +71,7 @@ namespace MTL
 		: public RuntimeClassCheck<HeadInterface>
 		, public RuntimeClassCheck<TailInterfaces> ...
 	{
-		ULONG m_references = 1;
+		volatile ULONG m_references = 1;
 
 		template <typename Head, typename ... Tail>
 		void* QueryInterfaceImpl(GUID const& id) throw()
@@ -84,10 +120,12 @@ namespace MTL
 	protected:
 		RuntimeClass() throw()
 		{
+			Module::GetModule().IncrementObjectCount();
 		}
 
 		virtual ~RuntimeClass() throw()
 		{
+			Module::GetModule().DecrementObjectCount();
 		}
 
 	public:
