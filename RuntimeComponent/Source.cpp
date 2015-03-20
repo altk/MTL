@@ -62,6 +62,7 @@ public:
 
 	STDMETHODIMP ActivateInstance(IInspectable** result) throw() override final
 	{
+		static_assert(sizeof(IInspectable) == sizeof(ITestClass), "Sizeof check failed");
 		return ActivateInstanceImpl(reinterpret_cast<ITestClass**>(result));
 	}
 
