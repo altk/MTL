@@ -3,6 +3,8 @@
 #include "MTL.h"
 #include <cmath>
 
+#include "functional"
+
 using namespace MTL;
 using namespace ABI::RuntimeComponent;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTask;
@@ -55,6 +57,11 @@ public:
 class TestClassFactory sealed : public ActivationFactory < ITestClassFactory, TestClass >
 {
 public:
+	static PCWSTR GetRuntimeClassName() throw()
+	{
+		return RuntimeClass_RuntimeComponent_TestClass;
+	}
+
 	STDMETHODIMP ActivateInstance(IInspectable** result)
 	{
 		return ActivateInstanceImpl(result);
@@ -74,29 +81,11 @@ public:
 //Реализация экспортируемой функции получения фабрики объектов класса, имеющего идентификатор activatableClassId
 HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
 {
-	//*factory = nullptr;
-	BOOL hasEmbedNull;
-
-	//Проверяем идентфикатор класса и указатель на фабрику
-	if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
-	{
-		//Если идентификатор не задан или указатель нулевой
-		return E_INVALIDARG;
-	}
-
-	//Проверяем на равенство строки идентификатора класса и определенного нами класса
-	if (0 == wcscmp(RuntimeClass_RuntimeComponent_TestClass, WindowsGetStringRawBuffer(activatableClassId, nullptr)))
-	{
-		//Инициализируем указатель
-		*factory = new(std::nothrow) TestClassFactory();
-		return *factory ? S_OK : E_OUTOFMEMORY;
-	}
-	
-	//*factory = nullptr;
-	return E_NOINTERFACE;
+	return Module<TestClassFactory>::GetModule().GetActivationFactory(activatableClassId, factory);
 }
 
 HRESULT WINAPI DllCanUnloadNow() throw()
 {
-	return Module::GetModule().CanUnload();
+	return S_OK;
+	//return Module<TestClassFactory>::GetModule().CanUnload();
 }

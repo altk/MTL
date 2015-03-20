@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <activation.h>
 #include <new>
+#include <string.h>
 #include <ObjIdlbase.h>
 
 namespace MTL
@@ -14,14 +15,16 @@ namespace MTL
 	template <typename FactoryInterface, typename RuntimeClassType >
 	class ActivationFactory;
 
-	class Module sealed
+	template < typename ... Factories>
+	class Module;
+
+	template<>
+	class DECLSPEC_NOVTABLE Module < >
 	{
 		template <typename HeadInterface, typename ... TailInterfaces>
 		friend class RuntimeClass;
 
 		volatile ULONG m_objectCount;
-
-		Module() throw(){}
 
 		void IncrementObjectCount() throw()
 		{
@@ -32,18 +35,53 @@ namespace MTL
 		{
 			InterlockedDecrement(&m_objectCount);
 		}
-
+	protected:
+		HRESULT GetActivationFactoryImpl(HSTRING, IActivationFactory**) throw()
+		{
+			return E_NOINTERFACE;
+		}
 	public:
+		bool CanUnload() throw()
+		{
+			return m_objectCount == 0;
+		}
+	};
 
+	template < typename HeadFactory, typename ... TailFactories >
+	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
+	{
+		HeadFactory m_factory;
+	protected:
+		Module() throw(){}
+
+		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) throw()
+		{
+			// Проверяем на равенство строки идентификатора класса и определенного нами класса
+			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
+			{
+				//Инициализируем указатель
+				*factory = &m_factory;
+				return S_OK;
+			}
+			return Module<TailFactories...>::GetActivationFactoryImpl(activatableClassId, factory);
+		}
+	public:
 		static Module& GetModule() throw()
 		{
 			static Module singleton;
 			return singleton;
 		}
 
-		bool CanUnload() throw()
+		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
 		{
-			return m_objectCount == 0;
+			BOOL hasEmbedNull;
+			//Проверяем идентфикатор класса и указатель на фабрику
+			if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
+			{
+				//Если идентификатор не задан или указатель нулевой
+				return E_INVALIDARG;
+			}
+			return GetActivationFactoryImpl(activatableClassId, factory);
 		}
 	};
 
@@ -123,12 +161,10 @@ namespace MTL
 	protected:
 		RuntimeClass() throw()
 		{
-			Module::GetModule().IncrementObjectCount();
 		}
 
 		virtual ~RuntimeClass() throw()
 		{
-			Module::GetModule().DecrementObjectCount();
 		}
 
 	public:
