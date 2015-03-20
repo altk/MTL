@@ -26,7 +26,7 @@ namespace MTL
 	};
 #pragma endregion
 
-#pragma region Statick ckecks
+#pragma region Static ckecks
 	template <typename Interface>
 	struct RuntimeClassCheck : Interface
 	{
@@ -35,15 +35,57 @@ namespace MTL
 	};
 #pragma endregion
 
-#pragma region RuntimeClass template
+#pragma region Allocation strategy classes
+	class DECLSPEC_NOVTABLE HeapAllocationStrategy : public IInspectable
+	{
+		volatile ULONG m_references = 1;
+	protected:
+		HeapAllocationStrategy() throw(){}
+		virtual ~HeapAllocationStrategy() throw(){}
 
+		STDMETHODIMP_(ULONG) AddRefImpl() throw()
+		{
+			return InterlockedIncrement(&m_references);
+		}
+		STDMETHODIMP_(ULONG) ReleaseImpl() throw()
+		{
+			auto const remaining = InterlockedDecrement(&m_references);
+			if (0 == remaining)
+			{
+				delete this;
+			}
+			return remaining;
+		}
+	};
+
+	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
+	{
+		void* operator new(size_t) throw()
+		{
+			return nullptr;
+		}
+		void operator delete(void*) throw()
+		{
+
+		}
+	protected:
+		STDMETHODIMP_(ULONG) AddRefImpl() throw()
+		{
+			return 1;
+		}
+		STDMETHODIMP_(ULONG) ReleaseImpl() throw()
+		{
+			return 1;
+		}
+	};
+#pragma endregion
+
+#pragma region RuntimeClass template
 	template <typename HeadInterface, typename ... TailInterfaces>
-	class DECLSPEC_NOVTABLE RuntimeClass
+	class DECLSPEC_NOVTABLE RuntimeClassBase
 		: public RuntimeClassCheck<HeadInterface>
 		, public RuntimeClassCheck<TailInterfaces> ...
 	{
-		volatile ULONG m_references = 1;
-
 		template <typename Head, typename ... Tail>
 		void* QueryInterfaceImpl(GUID const& id) throw()
 		{
@@ -53,7 +95,6 @@ namespace MTL
 			}
 			return QueryInterfaceImpl<Tail...>(id);
 		}
-
 		template <int = 0>
 		void* QueryInterfaceImpl(GUID const&) throw()
 		{
@@ -69,7 +110,6 @@ namespace MTL
 			}
 			GetIidsImpl<Tail ...>(ids);
 		}
-
 		template <int = 0>
 		void GetIidsImpl(GUID*) throw()
 		{
@@ -81,24 +121,20 @@ namespace MTL
 		{
 			return !IsCloaked<Head>::value + CountInterfaces<Tail...>();
 		}
-
 		template <int = 0>
 		SIZE_T CountInterfaces() throw()
 		{
 			return 0;
 		}
-
 	protected:
-		RuntimeClass() throw()
+		RuntimeClassBase() throw()
+		{
+		}
+		virtual ~RuntimeClassBase() throw()
 		{
 		}
 
-		virtual ~RuntimeClass() throw()
-		{
-		}
-
-	public:
-		STDMETHODIMP QueryInterface(GUID const& id, void** object) throw() override final
+		STDMETHODIMP QueryInterfaceImpl(GUID const& id, void** object) throw()
 		{
 			if (id == __uuidof(HeadInterface) ||
 				id == __uuidof(IUnknown) ||
@@ -113,8 +149,7 @@ namespace MTL
 			static_cast<IUnknown *>(*object)->AddRef();
 			return S_OK;
 		}
-
-		STDMETHODIMP GetIids(ULONG* count, GUID** array) throw() override final
+		STDMETHODIMP GetIidsImpl(ULONG* count, GUID** array) throw()
 		{
 			*count = CountInterfaces<HeadInterface, TailInterfaces...>();
 			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
@@ -126,33 +161,50 @@ namespace MTL
 
 			return S_OK;
 		}
-
-		STDMETHODIMP_(ULONG) AddRef() throw() override final
-		{
-			return InterlockedIncrement(&m_references);
-		}
-
-		STDMETHODIMP_(ULONG) Release() throw() override final
-		{
-			auto const remaining = InterlockedDecrement(&m_references);
-			if (0 == remaining)
-			{
-				delete this;
-			}
-			return remaining;
-		}
-
-		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) throw() override final
+		STDMETHODIMP GetTrustLevelImpl(TrustLevel* trustLevel) throw()
 		{
 			*trustLevel = BaseTrust;
 			return S_OK;
+		}
+	};
+
+	template <typename HeadInterface, typename ... TailInterfaces>
+	class DECLSPEC_NOVTABLE RuntimeClass
+		: public HeapAllocationStrategy
+		, public RuntimeClassBase < HeadInterface, TailInterfaces... >
+	{
+	protected:
+		RuntimeClass() throw(){}
+		virtual ~RuntimeClass() throw(){}
+	public:
+		STDMETHODIMP QueryInterface(GUID const& id, void** object) throw() override final
+		{
+			return QueryInterfaceImpl(id, object);
+		}
+		STDMETHODIMP GetIids(ULONG* count, GUID** array) throw() override final
+		{
+			return GetIidsImpl(count, array);
+		}
+		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) throw() override final
+		{
+			return GetTrustLevelImpl(trustLevel);
+		}
+		STDMETHODIMP_(ULONG) AddRef() throw() override final
+		{
+			return AddRefImpl();
+		}
+		STDMETHODIMP_(ULONG) Release() throw() override final
+		{
+			return ReleaseImpl();
 		}
 	};
 #pragma endregion
 
 #pragma region ActivationFactory template
 	template <typename FactoryInterface, typename RuntimeClassType >
-	class DECLSPEC_NOVTABLE ActivationFactory : public RuntimeClass < FactoryInterface, IActivationFactory, IAgileObject >
+	class DECLSPEC_NOVTABLE ActivationFactory
+		: public StackAllocationStrategy
+		, public RuntimeClassBase < FactoryInterface, IActivationFactory, IAgileObject >
 	{
 	protected:
 		template < typename RuntimeClassInterface, typename ... Args >
@@ -165,21 +217,30 @@ namespace MTL
 			*result = new(std::nothrow) RuntimeClassType(std::forward<Args>(args)...);
 			return *result ? S_OK : E_OUTOFMEMORY;
 		}
-
-		template < typename ... Args >
-		STDMETHODIMP ActivateInstanceImpl(IInspectable** result, Args&& ... args) throw()
-		{
-			if (nullptr == result)
-			{
-				return E_INVALIDARG;
-			}
-			*result = reinterpret_cast<IInspectable*>(new(std::nothrow) RuntimeClassType(std::forward<Args>(args)...));
-			return *result ? S_OK : E_OUTOFMEMORY;
-		}
 	public:
 		STDMETHODIMP GetRuntimeClassName(HSTRING*) throw() override final
 		{
 			return E_ILLEGAL_METHOD_CALL;;
+		}
+		STDMETHODIMP QueryInterface(GUID const& id, void** object) throw() override final
+		{
+			return QueryInterfaceImpl(id, object);
+		}
+		STDMETHODIMP GetIids(ULONG* count, GUID** array) throw() override final
+		{
+			return GetIidsImpl(count, array);
+		}
+		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) throw() override final
+		{
+			return GetTrustLevelImpl(trustLevel);
+		}
+		STDMETHODIMP_(ULONG) AddRef() throw() override final
+		{
+			return AddRefImpl();
+		}
+		STDMETHODIMP_(ULONG) Release() throw() override final
+		{
+			return ReleaseImpl();
 		}
 	};
 #pragma endregion
@@ -192,7 +253,7 @@ namespace MTL
 	class DECLSPEC_NOVTABLE Module < >
 	{
 		template <typename HeadInterface, typename ... TailInterfaces>
-		friend class RuntimeClass;
+		friend class RuntimeClassBase;
 
 		volatile ULONG m_objectCount;
 
@@ -200,7 +261,6 @@ namespace MTL
 		{
 			InterlockedIncrement(&m_objectCount);
 		}
-
 		void DecrementObjectCount() throw()
 		{
 			InterlockedDecrement(&m_objectCount);
@@ -220,6 +280,7 @@ namespace MTL
 	template < typename HeadFactory, typename ... TailFactories >
 	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
 	{
+		static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
 		HeadFactory m_factory;
 	protected:
 		Module() throw(){}

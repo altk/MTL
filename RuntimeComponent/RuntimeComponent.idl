@@ -10,8 +10,8 @@ namespace RuntimeComponent
 	[exclusiveto(TestClass)]
 	interface ITestClassFactory : IInspectable
 	{
-		[overload("ActivateInstance")]HRESULT ActivateInstance0([in] INT32 value, [out, retval] TestClass** result);
-		[overload("ActivateInstance")]HRESULT ActivateInstance1([in] INT32 value, [in] INT32 power, [out, retval] TestClass** result);
+		[overload("ActivateInstance")]HRESULT ActivateInstanceInt([in] INT32 value, [out, retval] TestClass** result);
+		[overload("ActivateInstance")]HRESULT ActivateInstanceIntInt([in] INT32 value, [in] INT32 power, [out, retval] TestClass** result);
 	};
 
 	[exclusiveto(TestClass)]

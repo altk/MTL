@@ -60,17 +60,17 @@ public:
 		return RuntimeClass_RuntimeComponent_TestClass;
 	}
 
-	STDMETHODIMP ActivateInstance(IInspectable** result)
+	STDMETHODIMP ActivateInstance(IInspectable** result) throw() override final
 	{
-		return ActivateInstanceImpl(result);
+		return ActivateInstanceImpl(reinterpret_cast<ITestClass**>(result));
 	}
 
-	STDMETHODIMP ActivateInstance0(INT32 value, ITestClass** result) throw() override final
+	STDMETHODIMP ActivateInstanceInt(INT32 value, ITestClass** result) throw() override final
 	{
 		return ActivateInstanceImpl(result, value);
 	}
 
-	STDMETHODIMP ActivateInstance1(INT32 value, INT32 power, ITestClass** result) throw() override final
+	STDMETHODIMP ActivateInstanceIntInt(INT32 value, INT32 power, ITestClass** result) throw() override final
 	{
 		return ActivateInstanceImpl(result, value, power);
 	}

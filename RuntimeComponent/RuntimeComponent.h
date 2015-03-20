@@ -4,9 +4,9 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Wed Mar 18 17:29:39 2015
+/* at Fri Mar 20 17:14:24 2015
  */
-/* Compiler settings for C:\Users\vdronov\AppData\Local\Temp\RuntimeComponent.idl-09976d47:
+/* Compiler settings for C:\Users\vdronov\AppData\Local\Temp\RuntimeComponent.idl-92b14330:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -159,11 +159,11 @@ EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClassFactory;
             ITestClassFactory : public IInspectable
             {
             public:
-                virtual HRESULT STDMETHODCALLTYPE ActivateInstance0( 
+                virtual HRESULT STDMETHODCALLTYPE ActivateInstanceInt( 
                     /* [in] */ INT32 value,
                     /* [out][retval] */ ABI::RuntimeComponent::ITestClass **result) = 0;
                 
-                virtual HRESULT STDMETHODCALLTYPE ActivateInstance1( 
+                virtual HRESULT STDMETHODCALLTYPE ActivateInstanceIntInt( 
                     /* [in] */ INT32 value,
                     /* [in] */ INT32 power,
                     /* [out][retval] */ ABI::RuntimeComponent::ITestClass **result) = 0;
@@ -208,12 +208,12 @@ EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClassFactory;
             __x_ABI_CRuntimeComponent_CITestClassFactory * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        HRESULT ( STDMETHODCALLTYPE *ActivateInstance0 )( 
+        HRESULT ( STDMETHODCALLTYPE *ActivateInstanceInt )( 
             __x_ABI_CRuntimeComponent_CITestClassFactory * This,
             /* [in] */ INT32 value,
             /* [out][retval] */ __x_ABI_CRuntimeComponent_CITestClass **result);
         
-        HRESULT ( STDMETHODCALLTYPE *ActivateInstance1 )( 
+        HRESULT ( STDMETHODCALLTYPE *ActivateInstanceIntInt )( 
             __x_ABI_CRuntimeComponent_CITestClassFactory * This,
             /* [in] */ INT32 value,
             /* [in] */ INT32 power,
@@ -252,11 +252,11 @@ EXTERN_C const IID IID___x_ABI_CRuntimeComponent_CITestClassFactory;
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
 
-#define __x_ABI_CRuntimeComponent_CITestClassFactory_ActivateInstance0(This,value,result)	\
-    ( (This)->lpVtbl -> ActivateInstance0(This,value,result) ) 
+#define __x_ABI_CRuntimeComponent_CITestClassFactory_ActivateInstanceInt(This,value,result)	\
+    ( (This)->lpVtbl -> ActivateInstanceInt(This,value,result) ) 
 
-#define __x_ABI_CRuntimeComponent_CITestClassFactory_ActivateInstance1(This,value,power,result)	\
-    ( (This)->lpVtbl -> ActivateInstance1(This,value,power,result) ) 
+#define __x_ABI_CRuntimeComponent_CITestClassFactory_ActivateInstanceIntInt(This,value,power,result)	\
+    ( (This)->lpVtbl -> ActivateInstanceIntInt(This,value,power,result) ) 
 
 #endif /* COBJMACROS */
 
