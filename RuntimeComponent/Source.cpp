@@ -3,8 +3,6 @@
 #include "MTL.h"
 #include <cmath>
 
-#include "functional"
-
 using namespace MTL;
 using namespace ABI::RuntimeComponent;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTask;

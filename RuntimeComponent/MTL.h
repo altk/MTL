@@ -9,82 +9,7 @@
 
 namespace MTL
 {
-	template <typename HeadInterface, typename ... TailInterfaces>
-	class RuntimeClass;
-
-	template <typename FactoryInterface, typename RuntimeClassType >
-	class ActivationFactory;
-
-	template < typename ... Factories>
-	class Module;
-
-	template<>
-	class DECLSPEC_NOVTABLE Module < >
-	{
-		template <typename HeadInterface, typename ... TailInterfaces>
-		friend class RuntimeClass;
-
-		volatile ULONG m_objectCount;
-
-		void IncrementObjectCount() throw()
-		{
-			InterlockedIncrement(&m_objectCount);
-		}
-
-		void DecrementObjectCount() throw()
-		{
-			InterlockedDecrement(&m_objectCount);
-		}
-	protected:
-		HRESULT GetActivationFactoryImpl(HSTRING, IActivationFactory**) throw()
-		{
-			return E_NOINTERFACE;
-		}
-	public:
-		bool CanUnload() throw()
-		{
-			return m_objectCount == 0;
-		}
-	};
-
-	template < typename HeadFactory, typename ... TailFactories >
-	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
-	{
-		HeadFactory m_factory;
-	protected:
-		Module() throw(){}
-
-		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) throw()
-		{
-			// Проверяем на равенство строки идентификатора класса и определенного нами класса
-			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
-			{
-				//Инициализируем указатель
-				*factory = &m_factory;
-				return S_OK;
-			}
-			return Module<TailFactories...>::GetActivationFactoryImpl(activatableClassId, factory);
-		}
-	public:
-		static Module& GetModule() throw()
-		{
-			static Module singleton;
-			return singleton;
-		}
-
-		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
-		{
-			BOOL hasEmbedNull;
-			//Проверяем идентфикатор класса и указатель на фабрику
-			if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
-			{
-				//Если идентификатор не задан или указатель нулевой
-				return E_INVALIDARG;
-			}
-			return GetActivationFactoryImpl(activatableClassId, factory);
-		}
-	};
-
+#pragma region Cloaked traits
 	template <typename Interface>
 	struct Cloaked : Interface
 	{
@@ -99,13 +24,18 @@ namespace MTL
 	struct IsCloaked<Cloaked<Interface>> : std::true_type
 	{
 	};
+#pragma endregion
 
+#pragma region Statick ckecks
 	template <typename Interface>
 	struct RuntimeClassCheck : Interface
 	{
 		static_assert(std::is_base_of<IUnknown, Interface>::value, "IUnknown check failed");
 		static_assert(std::is_base_of<IInspectable, Interface>::value || std::is_base_of<IUnknown, Interface>::value, "IInspectable check failed");
 	};
+#pragma endregion
+
+#pragma region RuntimeClass template
 
 	template <typename HeadInterface, typename ... TailInterfaces>
 	class DECLSPEC_NOVTABLE RuntimeClass
@@ -218,7 +148,9 @@ namespace MTL
 			return S_OK;
 		}
 	};
+#pragma endregion
 
+#pragma region ActivationFactory template
 	template <typename FactoryInterface, typename RuntimeClassType >
 	class DECLSPEC_NOVTABLE ActivationFactory : public RuntimeClass < FactoryInterface, IActivationFactory, IAgileObject >
 	{
@@ -250,4 +182,77 @@ namespace MTL
 			return E_ILLEGAL_METHOD_CALL;;
 		}
 	};
+#pragma endregion
+
+#pragma region Module template
+	template < typename ... Factories>
+	class Module;
+
+	template<>
+	class DECLSPEC_NOVTABLE Module < >
+	{
+		template <typename HeadInterface, typename ... TailInterfaces>
+		friend class RuntimeClass;
+
+		volatile ULONG m_objectCount;
+
+		void IncrementObjectCount() throw()
+		{
+			InterlockedIncrement(&m_objectCount);
+		}
+
+		void DecrementObjectCount() throw()
+		{
+			InterlockedDecrement(&m_objectCount);
+		}
+	protected:
+		HRESULT GetActivationFactoryImpl(HSTRING, IActivationFactory**) throw()
+		{
+			return E_NOINTERFACE;
+		}
+	public:
+		bool CanUnload() throw()
+		{
+			return m_objectCount == 0;
+		}
+	};
+
+	template < typename HeadFactory, typename ... TailFactories >
+	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
+	{
+		HeadFactory m_factory;
+	protected:
+		Module() throw(){}
+
+		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) throw()
+		{
+			// Проверяем на равенство строки идентификатора класса и определенного нами класса
+			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
+			{
+				//Инициализируем указатель
+				*factory = &m_factory;
+				return S_OK;
+			}
+			return Module<TailFactories...>::GetActivationFactoryImpl(activatableClassId, factory);
+		}
+	public:
+		static Module& GetModule() throw()
+		{
+			static Module singleton;
+			return singleton;
+		}
+
+		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
+		{
+			BOOL hasEmbedNull;
+			//Проверяем идентфикатор класса и указатель на фабрику
+			if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
+			{
+				//Если идентификатор не задан или указатель нулевой
+				return E_INVALIDARG;
+			}
+			return GetActivationFactoryImpl(activatableClassId, factory);
+		}
+	};
+#pragma endregion
 }
