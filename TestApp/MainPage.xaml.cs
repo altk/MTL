@@ -15,6 +15,13 @@ namespace TestApp
         public MainPage()
         {
             InitializeComponent();
+
+            Task.Delay(1000)
+                .ContinueWith(task =>
+                {
+                    GC.Collect();
+                    //TestClass.TryUnload();
+                });
         }
     }
 }

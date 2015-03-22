@@ -14,6 +14,14 @@ namespace RuntimeComponent
 		[overload("ActivateInstance")]HRESULT ActivateInstanceIntInt([in] INT32 value, [in] INT32 power, [out, retval] TestClass** result);
 	};
 
+	[version(1.0)]
+	[uuid(9d179c2b-28e9-46b2-b9fa-3c2fadb840a4)]
+	[exclusiveto(TestClass)]
+	interface ITestClassStatics : IInspectable
+	{
+		HRESULT TryUnload();
+	};
+
 	[exclusiveto(TestClass)]
 	[version(1.0)]
 	[uuid(67214cd3-3c60-4844-aa3b-a234f99f3c47)]
@@ -40,6 +48,7 @@ namespace RuntimeComponent
 	[activatable(1.0)]
 	[activatable(ITestClassFactory, 1.0)]
 	[marshaling_behavior(agile)]
+	[static(ITestClassStatics, 1.0)]
 	[threading(both)]
 	runtimeclass TestClass
 	{

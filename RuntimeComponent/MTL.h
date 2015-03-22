@@ -38,10 +38,17 @@ namespace MTL
 #pragma region Allocation strategy classes
 	class DECLSPEC_NOVTABLE HeapAllocationStrategy : public IInspectable
 	{
+		static volatile ULONG m_objectCount;
 		volatile ULONG m_references = 1;
 	protected:
-		HeapAllocationStrategy() throw(){}
-		virtual ~HeapAllocationStrategy() throw(){}
+		HeapAllocationStrategy() throw()
+		{
+			InterlockedIncrement(&m_objectCount);
+		}
+		virtual ~HeapAllocationStrategy() throw()
+		{
+			InterlockedDecrement(&m_objectCount);
+		}
 
 		STDMETHODIMP_(ULONG) AddRefImpl() throw()
 		{
@@ -56,7 +63,17 @@ namespace MTL
 			}
 			return remaining;
 		}
+	public:
+		static ULONG GetObjectCount() throw()
+		{
+			return m_objectCount;
+		}
 	};
+
+#ifndef OBJECTCOUNT_H
+#define OBJECTCOUNT_H
+	volatile ULONG HeapAllocationStrategy::m_objectCount = 0;
+#endif
 
 	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
 	{
@@ -64,7 +81,7 @@ namespace MTL
 		{
 			return nullptr;
 		}
-		void operator delete(void*) throw()
+			void operator delete(void*) throw()
 		{
 
 		}
@@ -201,10 +218,10 @@ namespace MTL
 #pragma endregion
 
 #pragma region ActivationFactory template
-	template <typename FactoryInterface, typename RuntimeClassType >
+	template <typename RuntimeClassType, typename ... FactoryInterfaces >
 	class DECLSPEC_NOVTABLE ActivationFactory
 		: public StackAllocationStrategy
-		, public RuntimeClassBase < FactoryInterface, IActivationFactory, IAgileObject >
+		, public RuntimeClassBase < IActivationFactory, IAgileObject, FactoryInterfaces...>
 	{
 	protected:
 		template < typename RuntimeClassInterface, typename ... Args >

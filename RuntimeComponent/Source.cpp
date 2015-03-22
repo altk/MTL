@@ -52,7 +52,7 @@ public:
 	}
 };
 
-class TestClassFactory sealed : public ActivationFactory < ITestClassFactory, TestClass >
+class TestClassFactory sealed : public ActivationFactory < TestClass, ITestClassFactory, ITestClassStatics >
 {
 public:
 	static PCWSTR GetRuntimeClassName() throw()
@@ -75,6 +75,12 @@ public:
 	{
 		return ActivateInstanceImpl(result, value, power);
 	}
+
+	STDMETHODIMP TryUnload() throw() override final
+	{
+		CoFreeUnusedLibrariesEx(0, 0);
+		return S_OK;
+	}
 };
 
 //Реализация экспортируемой функции получения фабрики объектов класса, имеющего идентификатор activatableClassId
@@ -85,6 +91,5 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFa
 
 HRESULT WINAPI DllCanUnloadNow() throw()
 {
-	return S_OK;
-	//return Module<TestClassFactory>::GetModule().CanUnload();
+	return HeapAllocationStrategy::GetObjectCount() == 0 ? S_OK : S_FALSE;
 }
