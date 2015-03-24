@@ -41,20 +41,20 @@ namespace MTL
 		static volatile ULONG m_objectCount;
 		volatile ULONG m_references = 1;
 	protected:
-		HeapAllocationStrategy() throw()
+		HeapAllocationStrategy() noexcept
 		{
 			InterlockedIncrement(&m_objectCount);
 		}
-		virtual ~HeapAllocationStrategy() throw()
+		virtual ~HeapAllocationStrategy() noexcept
 		{
 			InterlockedDecrement(&m_objectCount);
 		}
 
-		STDMETHODIMP_(ULONG) AddRefImpl() throw()
+		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
 		{
 			return InterlockedIncrement(&m_references);
 		}
-		STDMETHODIMP_(ULONG) ReleaseImpl() throw()
+		STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
 		{
 			auto const remaining = InterlockedDecrement(&m_references);
 			if (0 == remaining)
@@ -64,7 +64,7 @@ namespace MTL
 			return remaining;
 		}
 	public:
-		static ULONG GetObjectCount() throw()
+		static ULONG GetObjectCount() noexcept
 		{
 			return m_objectCount;
 		}
@@ -77,20 +77,21 @@ namespace MTL
 
 	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
 	{
-		void* operator new(size_t) throw()
+		void* operator new(size_t size) noexcept
 		{
-			return nullptr;
+			return ::operator new(size);
 		}
-			void operator delete(void*) throw()
-		{
 
+		void operator delete(void* ptr) noexcept
+		{
+			::operator delete(ptr);
 		}
 	protected:
-		STDMETHODIMP_(ULONG) AddRefImpl() throw()
+		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
 		{
 			return 1;
 		}
-		STDMETHODIMP_(ULONG) ReleaseImpl() throw()
+		STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
 		{
 			return 1;
 		}
@@ -104,7 +105,7 @@ namespace MTL
 		, public RuntimeClassCheck<TailInterfaces> ...
 	{
 		template <typename Head, typename ... Tail>
-		void* QueryInterfaceImpl(GUID const& id) throw()
+		void* QueryInterfaceImpl(GUID const& id) noexcept
 		{
 			if (!IsCloaked<Head>::value && id == __uuidof(Head))
 			{
@@ -113,13 +114,13 @@ namespace MTL
 			return QueryInterfaceImpl<Tail...>(id);
 		}
 		template <int = 0>
-		void* QueryInterfaceImpl(GUID const&) throw()
+		void* QueryInterfaceImpl(GUID const&) noexcept
 		{
 			return nullptr;
 		}
 
 		template <typename Head, typename ... Tail>
-		void GetIidsImpl(GUID* ids) throw()
+		void GetIidsImpl(GUID* ids) noexcept
 		{
 			if (!IsCloaked<Head>::value)
 			{
@@ -128,30 +129,30 @@ namespace MTL
 			GetIidsImpl<Tail ...>(ids);
 		}
 		template <int = 0>
-		void GetIidsImpl(GUID*) throw()
+		void GetIidsImpl(GUID*) noexcept
 		{
 			return;
 		}
 
 		template <typename Head, typename ... Tail>
-		SIZE_T CountInterfaces() throw()
+		SIZE_T CountInterfaces() noexcept
 		{
 			return !IsCloaked<Head>::value + CountInterfaces<Tail...>();
 		}
 		template <int = 0>
-		SIZE_T CountInterfaces() throw()
+		SIZE_T CountInterfaces() noexcept
 		{
 			return 0;
 		}
 	protected:
-		RuntimeClassBase() throw()
+		RuntimeClassBase() noexcept
 		{
 		}
-		virtual ~RuntimeClassBase() throw()
+		virtual ~RuntimeClassBase() noexcept
 		{
 		}
 
-		STDMETHODIMP QueryInterfaceImpl(GUID const& id, void** object) throw()
+		STDMETHODIMP QueryInterfaceImpl(GUID const& id, void** object) noexcept
 		{
 			if (id == __uuidof(HeadInterface) ||
 				id == __uuidof(IUnknown) ||
@@ -166,7 +167,7 @@ namespace MTL
 			static_cast<IUnknown *>(*object)->AddRef();
 			return S_OK;
 		}
-		STDMETHODIMP GetIidsImpl(ULONG* count, GUID** array) throw()
+		STDMETHODIMP GetIidsImpl(ULONG* count, GUID** array) noexcept
 		{
 			*count = CountInterfaces<HeadInterface, TailInterfaces...>();
 			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
@@ -178,7 +179,7 @@ namespace MTL
 
 			return S_OK;
 		}
-		STDMETHODIMP GetTrustLevelImpl(TrustLevel* trustLevel) throw()
+		STDMETHODIMP GetTrustLevelImpl(TrustLevel* trustLevel) noexcept
 		{
 			*trustLevel = BaseTrust;
 			return S_OK;
@@ -191,26 +192,26 @@ namespace MTL
 		, public RuntimeClassBase < HeadInterface, TailInterfaces... >
 	{
 	protected:
-		RuntimeClass() throw(){}
-		virtual ~RuntimeClass() throw(){}
+		RuntimeClass() noexcept {}
+		virtual ~RuntimeClass() noexcept {}
 	public:
-		STDMETHODIMP QueryInterface(GUID const& id, void** object) throw() override final
+		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override final
 		{
 			return QueryInterfaceImpl(id, object);
 		}
-		STDMETHODIMP GetIids(ULONG* count, GUID** array) throw() override final
+		STDMETHODIMP GetIids(ULONG* count, GUID** array) noexcept override final
 		{
 			return GetIidsImpl(count, array);
 		}
-		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) throw() override final
+		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) noexcept override final
 		{
 			return GetTrustLevelImpl(trustLevel);
 		}
-		STDMETHODIMP_(ULONG) AddRef() throw() override final
+		STDMETHODIMP_(ULONG) AddRef() noexcept override final
 		{
 			return AddRefImpl();
 		}
-		STDMETHODIMP_(ULONG) Release() throw() override final
+		STDMETHODIMP_(ULONG) Release() noexcept override final
 		{
 			return ReleaseImpl();
 		}
@@ -225,7 +226,7 @@ namespace MTL
 	{
 	protected:
 		template < typename RuntimeClassInterface, typename ... Args >
-		STDMETHODIMP ActivateInstanceImpl(RuntimeClassInterface** result, Args&& ... args) throw()
+		STDMETHODIMP ActivateInstanceImpl(RuntimeClassInterface** result, Args&& ... args) noexcept
 		{
 			if (nullptr == result)
 			{
@@ -235,27 +236,27 @@ namespace MTL
 			return *result ? S_OK : E_OUTOFMEMORY;
 		}
 	public:
-		STDMETHODIMP GetRuntimeClassName(HSTRING*) throw() override final
+		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
 		{
 			return E_ILLEGAL_METHOD_CALL;;
 		}
-		STDMETHODIMP QueryInterface(GUID const& id, void** object) throw() override final
+		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override final
 		{
 			return QueryInterfaceImpl(id, object);
 		}
-		STDMETHODIMP GetIids(ULONG* count, GUID** array) throw() override final
+		STDMETHODIMP GetIids(ULONG* count, GUID** array) noexcept override final
 		{
 			return GetIidsImpl(count, array);
 		}
-		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) throw() override final
+		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) noexcept override final
 		{
 			return GetTrustLevelImpl(trustLevel);
 		}
-		STDMETHODIMP_(ULONG) AddRef() throw() override final
+		STDMETHODIMP_(ULONG) AddRef() noexcept override final
 		{
 			return AddRefImpl();
 		}
-		STDMETHODIMP_(ULONG) Release() throw() override final
+		STDMETHODIMP_(ULONG) Release() noexcept override final
 		{
 			return ReleaseImpl();
 		}
@@ -274,21 +275,21 @@ namespace MTL
 
 		volatile ULONG m_objectCount;
 
-		void IncrementObjectCount() throw()
+		void IncrementObjectCount() noexcept
 		{
 			InterlockedIncrement(&m_objectCount);
 		}
-		void DecrementObjectCount() throw()
+		void DecrementObjectCount() noexcept
 		{
 			InterlockedDecrement(&m_objectCount);
 		}
 	protected:
-		HRESULT GetActivationFactoryImpl(HSTRING, IActivationFactory**) throw()
+		HRESULT GetActivationFactoryImpl(HSTRING, IActivationFactory**) noexcept
 		{
 			return E_NOINTERFACE;
 		}
 	public:
-		bool CanUnload() throw()
+		bool CanUnload() noexcept
 		{
 			return m_objectCount == 0;
 		}
@@ -300,9 +301,9 @@ namespace MTL
 		static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
 		HeadFactory m_factory;
 	protected:
-		Module() throw(){}
+		Module() noexcept {}
 
-		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) throw()
+		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) noexcept
 		{
 			// Проверяем на равенство строки идентификатора класса и определенного нами класса
 			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
@@ -314,13 +315,13 @@ namespace MTL
 			return Module<TailFactories...>::GetActivationFactoryImpl(activatableClassId, factory);
 		}
 	public:
-		static Module& GetModule() throw()
+		static Module& GetModule() noexcept
 		{
 			static Module singleton;
 			return singleton;
 		}
 
-		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
+		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) noexcept
 		{
 			BOOL hasEmbedNull;
 			//Проверяем идентфикатор класса и указатель на фабрику

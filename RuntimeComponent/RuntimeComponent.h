@@ -3,11 +3,11 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 8.00.0603 */
-/* at Sun Mar 22 12:45:49 2015
+ /* File created by MIDL compiler version 8.00.0611 */
+/* at Tue Jan 19 06:14:07 2038
  */
-/* Compiler settings for C:\Users\2C82~1\AppData\Local\Temp\RuntimeComponent.idl-7d0a62d7:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
+/* Compiler settings for C:\Users\drono\AppData\Local\Temp\RuntimeComponent.idl-2499dc19:
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0611 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -29,7 +29,7 @@
 
 #ifndef __RPCNDR_H_VERSION__
 #error this stub requires an updated version of <rpcndr.h>
-#endif // __RPCNDR_H_VERSION__
+#endif /* __RPCNDR_H_VERSION__ */
 
 #ifndef COM_NO_WINDOWS_H
 #include "windows.h"

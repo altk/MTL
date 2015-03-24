@@ -1,16 +1,23 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Globalization;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using RuntimeComponent;
 
-// The Blank Application template is documented at http://go.microsoft.com/fwlink/?LinkId=234227
+// The Blank Application template is documented at http://go.microsoft.com/fwlink/?LinkId=402347&clcid=0x409
 
-namespace TestApp
+namespace App1
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
@@ -34,15 +41,14 @@ namespace TestApp
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            new TestClass();
-            new TestClass(1);
-            new TestClass(2, 3);
+            new RuntimeComponent.TestClass();
 #if DEBUG
-            if (Debugger.IsAttached)
+            if (System.Diagnostics.Debugger.IsAttached)
             {
                 this.DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -52,7 +58,7 @@ namespace TestApp
                 // Create a Frame to act as the navigation context and navigate to the first page
                 rootFrame = new Frame();
                 // Set the default language
-                rootFrame.Language = ApplicationLanguages.Languages[0];
+                rootFrame.Language = Windows.Globalization.ApplicationLanguages.Languages[0];
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
@@ -72,11 +78,8 @@ namespace TestApp
                 // parameter
                 rootFrame.Navigate(typeof(MainPage), e.Arguments);
             }
-
             // Ensure the current window is active
             Window.Current.Activate();
-
-
         }
 
         /// <summary>
