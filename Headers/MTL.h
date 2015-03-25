@@ -1,14 +1,40 @@
 #pragma once
+#include <roapi.h>
 #include <Windows.h>
+#include <winstring.h>
 #include <inspectable.h>
 #include <type_traits>
 #include <activation.h>
 #include <new>
 #include <string.h>
 #include <ObjIdlbase.h>
+#include <utility>
+#include "ASSERT.h"
+#include "VERIFY.h"
+#include "TRACE.h"
 
 namespace MTL
 {
+#pragma region Exception
+	struct Exception
+	{
+		HRESULT Result;
+
+		explicit Exception(HRESULT const result) noexcept
+			: Result(result)
+		{
+		}
+	};
+
+	void Check(HRESULT const result)
+	{
+		if (S_OK != result)
+		{
+			throw Exception(result);
+		}
+	}
+#pragma endregion
+
 #pragma region Cloaked traits
 	template <typename Interface>
 	struct Cloaked : Interface
@@ -77,15 +103,6 @@ namespace MTL
 
 	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
 	{
-		void* operator new(size_t size) noexcept
-		{
-			return ::operator new(size);
-		}
-
-		void operator delete(void* ptr) noexcept
-		{
-			::operator delete(ptr);
-		}
 	protected:
 		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
 		{
@@ -95,6 +112,10 @@ namespace MTL
 		{
 			return 1;
 		}
+		void * operator new(std::size_t) = delete;
+		void * operator new[](std::size_t) = delete;
+		void operator delete(void *) = delete;
+		void operator delete[](void *) = delete;
 	};
 #pragma endregion
 
@@ -305,10 +326,8 @@ namespace MTL
 
 		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) noexcept
 		{
-			// Проверяем на равенство строки идентификатора класса и определенного нами класса
 			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
 			{
-				//Инициализируем указатель
 				*factory = &m_factory;
 				return S_OK;
 			}
@@ -324,14 +343,371 @@ namespace MTL
 		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) noexcept
 		{
 			BOOL hasEmbedNull;
-			//Проверяем идентфикатор класса и указатель на фабрику
 			if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
 			{
-				//Если идентификатор не задан или указатель нулевой
 				return E_INVALIDARG;
 			}
 			return GetActivationFactoryImpl(activatableClassId, factory);
 		}
 	};
 #pragma endregion
+
+#pragma region RemoveAddRefRelease
+	template <typename Interface>
+	class RemoveAddRefRelease : public Interface
+	{
+		STDMETHODIMP_(ULONG) AddRef();
+		STDMETHODIMP_(ULONG) Release();
+	};
+#pragma endregion
+
+#pragma region ComPtr
+	template <typename Interface>
+	class ComPtr
+	{
+		template <typename T>
+		friend class ComPtr;
+
+		Interface * m_ptr = nullptr;
+
+		void InternalAddRef() const noexcept
+		{
+			if (m_ptr)
+			{
+				m_ptr->AddRef();
+			}
+		}
+		void InternalRelease() noexcept
+		{
+			Interface * temp = m_ptr;
+			if (temp)
+			{
+				m_ptr = nullptr;
+				temp->Release();
+			}
+		}
+		void InternalCopy(Interface * other) noexcept
+		{
+			if (m_ptr != other)
+			{
+				InternalRelease();
+				m_ptr = other;
+				InternalAddRef();
+			}
+		}
+		template <typename T>
+		void InternalMove(ComPtr<T> & other) noexcept
+		{
+			if (m_ptr != other.m_ptr)
+			{
+				InternalRelease();
+				m_ptr = other.m_ptr;
+				other.m_ptr = nullptr;
+			}
+		}
+	public:
+		ComPtr() noexcept = default;
+		ComPtr(ComPtr const & other) noexcept
+			: m_ptr(other.m_ptr)
+		{
+			InternalAddRef();
+		}
+		template <typename T>
+		ComPtr(ComPtr<T> const & other) noexcept
+			: m_ptr(other.m_ptr)
+		{
+			InternalAddRef();
+		}
+		template <typename T>
+		ComPtr(ComPtr<T> && other) noexcept
+			: m_ptr(other.m_ptr)
+		{
+			other.m_ptr = nullptr;
+		}
+
+		~ComPtr() noexcept
+		{
+			InternalRelease();
+		}
+
+		ComPtr & operator=(ComPtr const & other) noexcept
+		{
+			InternalCopy(other.m_ptr);
+			return *this;
+		}
+		template <typename T>
+		ComPtr & operator=(ComPtr<T> const & other) noexcept
+		{
+			InternalCopy(other.m_ptr);
+			return *this;
+		}
+		template <typename T>
+		ComPtr & operator=(ComPtr<T> && other) noexcept
+		{
+			InternalMove(other);
+			return *this;
+		}
+		explicit operator bool() const noexcept
+		{
+			return nullptr != m_ptr;
+		}
+
+		void Swap(ComPtr & other) noexcept
+		{
+			Interface * temp = m_ptr;
+			m_ptr = other.m_ptr;
+			other.m_ptr = temp;
+		}
+
+		Interface * Get() const noexcept
+		{
+			return m_ptr;
+		}
+		void Attach(Interface * other) noexcept
+		{
+			InternalRelease();
+			m_ptr = other;
+		}
+		Interface * Detach() noexcept
+		{
+			Interface * temp = m_ptr;
+			m_ptr = nullptr;
+			return temp;
+		}
+		void Reset() noexcept
+		{
+			InternalRelease();
+		}
+		Interface ** GetAddressOf() noexcept
+		{
+			ASSERT(m_ptr == nullptr);
+			return &m_ptr;
+		}
+		void CopyTo(Interface ** other) const noexcept
+		{
+			InternalAddRef();
+			*other = m_ptr;
+		}
+		template <typename T>
+		ComPtr<T> As() const noexcept
+		{
+			ComPtr<T> temp;
+			m_ptr->QueryInterface(temp.GetAddressOf());
+			return temp;
+		}
+
+		RemoveAddRefRelease<Interface> * operator->() const noexcept
+		{
+			return static_cast<RemoveAddRefRelease<Interface> *>(m_ptr);
+		}
+	};
+
+	template <typename Interface>
+	void swap(ComPtr<Interface> & left, ComPtr<Interface> & right) noexcept
+	{
+		left.Swap(right);
+	}
+#pragma endregion
+
+	template <typename T>
+	HRESULT GetActivationFactory(HSTRING activatableClassId, ComPtr<T> & factory) noexcept
+	{
+		return RoGetActivationFactory(activatableClassId, __uuidof(T), reinterpret_cast<void**>(factory.GetAddressOf()));
+	}
+}
+
+namespace MTL
+{
+	namespace Wrappers
+	{
+#pragma region Handle
+		template <typename Traits>
+		class Handle
+		{
+			using Pointer = typename Traits::Pointer;
+
+			Pointer m_value;
+
+			void Close() noexcept
+			{
+				if (*this)
+				{
+					Traits::Close(m_value);
+				}
+			}
+		public:
+			Handle(Handle const &) = default;
+			Handle & operator=(Handle const &) = default;
+			explicit Handle(Pointer value = Traits::Invalid()) noexcept
+				: m_value(value)
+			{
+			}
+			Handle(Handle && other) noexcept
+				: m_value(other.Detach())
+			{
+			}
+
+			Handle & operator=(Handle && other) noexcept
+			{
+				if (this != other)
+				{
+					Attach(other.Detach());
+				}
+
+				return *this;
+			}
+
+			~Handle() noexcept
+			{
+				Close();
+			}
+
+			explicit operator bool() const noexcept
+			{
+				return m_value != Traits::Invalid();
+			}
+
+			Pointer Get() const noexcept
+			{
+				return m_value;
+			}
+			Pointer * GetAddressOf() noexcept
+			{
+				ASSERT(!*this);
+				return &m_value;
+			}
+
+			bool Attach(Pointer value = Traits::Invalid()) noexcept
+			{
+				if (m_value != value)
+				{
+					Close();
+					m_value = value;
+				}
+				return static_cast<bool>(*this);
+			}
+			Pointer Detach() noexcept
+			{
+				Pointer value = m_value;
+				m_value = Traits::Invalid();
+				return value;
+			}
+
+			void Swap(Handle & other) noexcept
+			{
+				std::swap(m_value, other.m_value);
+			}
+		};
+
+		template<typename Traits>
+		void swap(Handle<Traits> & left, Handle<Traits> & right) noexcept
+		{
+			left.Swap(right);
+		}
+#pragma endregion
+
+#pragma region HStringTraits
+		struct HStringTraits
+		{
+			using Pointer = HSTRING;
+
+			static Pointer Invalid() noexcept
+			{
+				return nullptr;
+			}
+
+			static void Close(Pointer value) noexcept
+			{
+				VERIFY(S_OK == WindowsDeleteString(value));
+			}
+		};
+#pragma endregion
+
+#pragma region HString
+		using HString = Handle<HStringTraits>;
+
+		HString CreateString(wchar_t const * const string, unsigned const length)
+		{
+			HString result;
+			Check(WindowsCreateString(string, length, result.GetAddressOf()));
+			return result;
+		}
+
+		template <unsigned Count>
+		HString CreateString(wchar_t const (&string)[Count])
+		{
+			return CreateString(string, Count - 1);
+		}
+
+		wchar_t const * Buffer(HString const & string) noexcept
+		{
+			return WindowsGetStringRawBuffer(string.Get(), nullptr);
+		}
+
+		wchar_t const * Buffer(HString const & string, unsigned & length) noexcept
+		{
+			return WindowsGetStringRawBuffer(string.Get(), &length);
+		}
+
+		unsigned Length(HString const & string) noexcept
+		{
+			return WindowsGetStringLen(string.Get());
+		}
+
+		bool Empty(HString const & string) noexcept
+		{
+			return 0 != WindowsIsStringEmpty(string.Get());
+		}
+
+		HString Duplicate(HString const & string)
+		{
+			HString result;
+
+			Check(WindowsDuplicateString(string.Get(), result.GetAddressOf()));
+
+			return result;
+		}
+
+		HString Substring(HString const & string, unsigned const start)
+		{
+			HString result;
+
+			Check(WindowsSubstring(string.Get(), start, result.GetAddressOf()));
+
+			return result;
+		}
+#pragma endregion
+
+#pragma region HStringReference
+		class HStringReference
+		{
+			HSTRING m_string;
+			HSTRING_HEADER m_header;
+
+		public:
+			HStringReference(HStringReference const &) = delete;
+			HStringReference & operator=(HStringReference const &) = delete;
+			void * operator new(std::size_t) = delete;
+			void * operator new[](std::size_t) = delete;
+			void operator delete(void *) = delete;
+			void operator delete[](void *) = delete;
+
+			HStringReference(wchar_t const * const value, unsigned length)
+			{
+				Check(WindowsCreateStringReference(value, length, &m_header, &m_string));
+			}
+			template <unsigned Count>
+			HStringReference(wchar_t const (&value)[Count])
+				: HStringReference(value, Count-1)
+			{
+			}
+
+			HSTRING Get() const noexcept 
+			{
+				return m_string;
+			}
+		};
+#pragma endregion
+
+	}
 }
