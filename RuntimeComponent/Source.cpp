@@ -8,23 +8,23 @@ using namespace ABI::RuntimeComponent;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTask;
 using ABI::Windows::ApplicationModel::Background::IBackgroundTaskInstance;
 
-class ABI::RuntimeComponent::TestClass sealed : public RuntimeClass < ITestClass, ITestClass2 >
+class ABI::RuntimeComponent::TestClass sealed : public RuntimeClass<ITestClass, ITestClass2>
 {
 	INT32 value;
 public:
-	TestClass() throw() : value()
+	TestClass() noexcept : value()
 	{
 	}
 
-	explicit TestClass(INT32 value_) throw() : value(value_)
+	explicit TestClass(INT32 value_) noexcept : value(value_)
 	{
 	}
 
-	TestClass(INT32 value_, INT32 power_) throw() : value(std::pow(value_, power_))
+	TestClass(INT32 value_, INT32 power_) noexcept : value(std::pow(value_, power_))
 	{
 	}
 
-	STDMETHODIMP GetRuntimeClassName(HSTRING* className) throw() override final
+	STDMETHODIMP GetRuntimeClassName(HSTRING* className) noexcept override final
 	{
 		return WindowsCreateString(
 			RuntimeClass_RuntimeComponent_TestClass,
@@ -33,19 +33,19 @@ public:
 			);
 	}
 
-	STDMETHODIMP get_Int(INT32* result) throw() override final
+	STDMETHODIMP get_Int(INT32* result) noexcept override final
 	{
 		*result = value;
 		return S_OK;
 	}
 
-	STDMETHODIMP get_Str(HSTRING* result) throw() override final
+	STDMETHODIMP get_Str(HSTRING* result) noexcept override final
 	{
 		const WCHAR str[] = L"10";
 		return WindowsCreateString(str, _countof(str), result);
 	}
 
-	STDMETHODIMP get_Long(INT64* result)
+	STDMETHODIMP get_Long(INT64* result) noexcept override final
 	{
 		*result = value;
 		return S_OK;
@@ -55,28 +55,28 @@ public:
 class TestClassFactory sealed : public ActivationFactory < TestClass, ITestClassFactory, ITestClassStatics >
 {
 public:
-	static PCWSTR GetRuntimeClassName() throw()
+	static PCWSTR GetRuntimeClassName() noexcept
 	{
 		return RuntimeClass_RuntimeComponent_TestClass;
 	}
 
-	STDMETHODIMP ActivateInstance(IInspectable** result) throw() override final
+	STDMETHODIMP ActivateInstance(IInspectable** result) noexcept override final
 	{
 		static_assert(sizeof(IInspectable) == sizeof(ITestClass), "Sizeof check failed");
 		return ActivateInstanceImpl(reinterpret_cast<ITestClass**>(result));
 	}
 
-	STDMETHODIMP ActivateInstanceInt(INT32 value, ITestClass** result) throw() override final
+	STDMETHODIMP ActivateInstanceInt(INT32 value, ITestClass** result) noexcept override final
 	{
 		return ActivateInstanceImpl(result, value);
 	}
 
-	STDMETHODIMP ActivateInstanceIntInt(INT32 value, INT32 power, ITestClass** result) throw() override final
+	STDMETHODIMP ActivateInstanceIntInt(INT32 value, INT32 power, ITestClass** result) noexcept override final
 	{
 		return ActivateInstanceImpl(result, value, power);
 	}
 
-	STDMETHODIMP TryUnload() throw() override final
+	STDMETHODIMP TryUnload() noexcept override final
 	{
 		CoFreeUnusedLibrariesEx(0, 0);
 		return S_OK;
@@ -84,12 +84,12 @@ public:
 };
 
 //Реализация экспортируемой функции получения фабрики объектов класса, имеющего идентификатор activatableClassId
-HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
+HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) noexcept
 {
 	return Module<TestClassFactory>::GetModule().GetActivationFactory(activatableClassId, factory);
 }
 
-HRESULT WINAPI DllCanUnloadNow() throw()
+HRESULT WINAPI DllCanUnloadNow() noexcept
 {
 	return HeapAllocationStrategy::GetObjectCount() == 0 ? S_OK : S_FALSE;
 }
