@@ -163,13 +163,6 @@ namespace MTL
 			return 0;
 		}
 	protected:
-		RuntimeClassBase() noexcept
-		{
-		}
-		virtual ~RuntimeClassBase() noexcept
-		{
-		}
-
 		STDMETHODIMP QueryInterfaceImpl(GUID const& id, void** object) noexcept
 		{
 			if (id == __uuidof(HeadInterface) ||
@@ -238,7 +231,9 @@ namespace MTL
 
 #pragma region ActivationFactory template
 	template <typename RuntimeClassType, typename ... FactoryInterfaces >
-	class DECLSPEC_NOVTABLE ActivationFactory : public RuntimeClassBase < IActivationFactory, IAgileObject, FactoryInterfaces...>
+	class DECLSPEC_NOVTABLE ActivationFactory
+		: public StackAllocationStrategy
+		, public RuntimeClassBase < IActivationFactory, IAgileObject, FactoryInterfaces...>
 	{
 	protected:
 		template < typename RuntimeClassInterface, typename ... Args >
@@ -251,9 +246,6 @@ namespace MTL
 			*result = new(std::nothrow) RuntimeClassType(std::forward<Args>(args)...);
 			return *result ? S_OK : E_OUTOFMEMORY;
 		}
-
-		ActivationFactory() noexcept {}
-		virtual ~ActivationFactory() noexcept {}
 	public:
 		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
 		{
@@ -273,11 +265,11 @@ namespace MTL
 		}
 		STDMETHODIMP_(ULONG) AddRef() noexcept override final
 		{
-			return 1;
+			return AddRefImpl();
 		}
 		STDMETHODIMP_(ULONG) Release() noexcept override final
 		{
-			return 1;
+			return ReleaseImpl();
 		}
 	};
 #pragma endregion
@@ -317,7 +309,7 @@ namespace MTL
 	template < typename HeadFactory, typename ... TailFactories >
 	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
 	{
-		//static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
+		static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
 		HeadFactory m_factory;
 	protected:
 		Module() noexcept {}
