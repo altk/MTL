@@ -55,6 +55,11 @@ public:
 class TestClassFactory sealed : public ActivationFactory < TestClass, ITestClassFactory, ITestClassStatics >
 {
 public:
+	void * operator new(std::size_t) = delete;
+	void * operator new[](std::size_t) = delete;
+	void operator delete(void *) = delete;
+	void operator delete[](void *) = delete;
+
 	static PCWSTR GetRuntimeClassName() throw()
 	{
 		return RuntimeClass_RuntimeComponent_TestClass;
@@ -81,15 +86,18 @@ public:
 		CoFreeUnusedLibrariesEx(0, 0);
 		return S_OK;
 	}
+
+	~TestClassFactory() noexcept{}
+
 };
-
-//Реализация экспортируемой функции получения фабрики объектов класса, имеющего идентификатор activatableClassId
-HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
-{
-	return Module<TestClassFactory>::GetModule().GetActivationFactory(activatableClassId, factory);
-}
-
-HRESULT WINAPI DllCanUnloadNow() throw()
-{
-	return HeapAllocationStrategy::GetObjectCount() == 0 ? S_OK : S_FALSE;
-}
+//
+////Реализация экспортируемой функции получения фабрики объектов класса, имеющего идентификатор activatableClassId
+//HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) throw()
+//{
+//	//return Module<TestClassFactory>::GetModule().GetActivationFactory(activatableClassId, factory);
+//}
+//
+//HRESULT WINAPI DllCanUnloadNow() throw()
+//{
+//	return HeapAllocationStrategy::GetObjectCount() == 0 ? S_OK : S_FALSE;
+//}

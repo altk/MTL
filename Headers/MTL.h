@@ -9,9 +9,7 @@
 #include <string.h>
 #include <ObjIdlbase.h>
 #include <utility>
-#include "ASSERT.h"
-#include "VERIFY.h"
-#include "TRACE.h"
+#include "MACRO.h"
 
 namespace MTL
 {
@@ -64,16 +62,20 @@ namespace MTL
 #pragma region Allocation strategy classes
 	class DECLSPEC_NOVTABLE HeapAllocationStrategy : public IInspectable
 	{
-		static volatile ULONG m_objectCount;
+		static volatile ULONG & getObjectCount() noexcept
+		{
+			static volatile ULONG m_objectCount = 0;
+			return m_objectCount;
+		}
 		volatile ULONG m_references = 1;
 	protected:
 		HeapAllocationStrategy() noexcept
 		{
-			InterlockedIncrement(&m_objectCount);
+			InterlockedIncrement(&getObjectCount());
 		}
 		virtual ~HeapAllocationStrategy() noexcept
 		{
-			InterlockedDecrement(&m_objectCount);
+			InterlockedDecrement(&getObjectCount());
 		}
 
 		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
@@ -92,14 +94,9 @@ namespace MTL
 	public:
 		static ULONG GetObjectCount() noexcept
 		{
-			return m_objectCount;
+			return getObjectCount();
 		}
 	};
-
-#ifndef OBJECTCOUNT_H
-#define OBJECTCOUNT_H
-	volatile ULONG HeapAllocationStrategy::m_objectCount = 0;
-#endif
 
 	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
 	{
@@ -241,9 +238,7 @@ namespace MTL
 
 #pragma region ActivationFactory template
 	template <typename RuntimeClassType, typename ... FactoryInterfaces >
-	class DECLSPEC_NOVTABLE ActivationFactory
-		: public StackAllocationStrategy
-		, public RuntimeClassBase < IActivationFactory, IAgileObject, FactoryInterfaces...>
+	class DECLSPEC_NOVTABLE ActivationFactory : public RuntimeClassBase < IActivationFactory, IAgileObject, FactoryInterfaces...>
 	{
 	protected:
 		template < typename RuntimeClassInterface, typename ... Args >
@@ -256,6 +251,9 @@ namespace MTL
 			*result = new(std::nothrow) RuntimeClassType(std::forward<Args>(args)...);
 			return *result ? S_OK : E_OUTOFMEMORY;
 		}
+
+		ActivationFactory() noexcept {}
+		virtual ~ActivationFactory() noexcept {}
 	public:
 		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
 		{
@@ -275,11 +273,11 @@ namespace MTL
 		}
 		STDMETHODIMP_(ULONG) AddRef() noexcept override final
 		{
-			return AddRefImpl();
+			return 1;
 		}
 		STDMETHODIMP_(ULONG) Release() noexcept override final
 		{
-			return ReleaseImpl();
+			return 1;
 		}
 	};
 #pragma endregion
@@ -319,7 +317,7 @@ namespace MTL
 	template < typename HeadFactory, typename ... TailFactories >
 	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
 	{
-		static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
+		//static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
 		HeadFactory m_factory;
 	protected:
 		Module() noexcept {}
@@ -508,12 +506,6 @@ namespace MTL
 		left.Swap(right);
 	}
 #pragma endregion
-
-	template <typename T>
-	HRESULT GetActivationFactory(HSTRING activatableClassId, ComPtr<T> & factory) noexcept
-	{
-		return RoGetActivationFactory(activatableClassId, __uuidof(T), reinterpret_cast<void**>(factory.GetAddressOf()));
-	}
 }
 
 namespace MTL
@@ -694,15 +686,15 @@ namespace MTL
 
 			HStringReference(wchar_t const * const value, unsigned length)
 			{
-				Check(WindowsCreateStringReference(value, length, &m_header, &m_string));
+				VERIFY_SUCCEEDED(WindowsCreateStringReference(value, length, &m_header, &m_string));
 			}
 			template <unsigned Count>
 			HStringReference(wchar_t const (&value)[Count])
-				: HStringReference(value, Count-1)
+				: HStringReference(value, Count - 1)
 			{
 			}
 
-			HSTRING Get() const noexcept 
+			HSTRING Get() const noexcept
 			{
 				return m_string;
 			}

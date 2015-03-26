@@ -1,10 +1,12 @@
 import "Inspectable.idl";
-import "Windows.UI.Xaml.Markup.idl";
+import "Windows.UI.Xaml.Controls.idl";
 
 namespace RuntimeApplication
 {
 	interface IMainPage;
-
+}
+namespace RuntimeApplication
+{
 	runtimeclass MainPage;
 }
 
@@ -22,9 +24,8 @@ namespace RuntimeApplication
 	[marshaling_behavior(agile)]
 	[threading(both)]
 	[version(0x00000001)]
-	runtimeclass MainPage 
+	runtimeclass MainPage : Windows.UI.Xaml.Controls.Page
 	{
 		[default] interface IMainPage;
-		//interface Windows.UI.Xaml.Markup.IComponentConnector;
 	}
 }

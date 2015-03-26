@@ -11,10 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RuntimeApplication", "Runti
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Headers", "Headers", "{BC61F669-FFC7-4FAD-9035-B24C2476A0E1}"
 	ProjectSection(SolutionItems) = preProject
-		Headers\ASSERT.h = Headers\ASSERT.h
+		Headers\MACRO.h = Headers\MACRO.h
 		Headers\MTL.h = Headers\MTL.h
-		Headers\TRACE.h = Headers\TRACE.h
-		Headers\VERIFY.h = Headers\VERIFY.h
 	EndProjectSection
 EndProject
 Global
