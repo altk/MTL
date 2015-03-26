@@ -23,7 +23,6 @@ namespace RuntimeApplication
 	public:
 		App() noexcept
 		{
-
 		}
 
 		STDMETHODIMP GetXamlType(TypeName type, IXamlType ** xamlType) noexcept override final
@@ -41,6 +40,27 @@ namespace RuntimeApplication
 			return S_OK;
 		}
 	};
+
+	class ApplicationInitializationCallback sealed : public RuntimeClass<IApplicationInitializationCallback>
+	{
+	public:
+		STDMETHODIMP Invoke(IApplicationInitializationCallbackParams *) noexcept override final
+		{
+			App();
+			return S_OK;
+		}
+	};
+}
+
+int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
+{
+	VERIFY_SUCCEEDED(RoInitialize(RO_INIT_TYPE::RO_INIT_MULTITHREADED));
+
+	ComPtr<IApplicationStatics> applicationStatics;
+	VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), applicationStatics.GetAddressOf()));
+
+	ComPtr<RuntimeApplication::ApplicationInitializationCallback> applicationInitializationCallback(new RuntimeApplication::ApplicationInitializationCallback());
+	applicationStatics->Start(applicationInitializationCallback.Get());
 }
 //
 //int main(int, HSTRING *)

@@ -205,6 +205,10 @@ namespace MTL
 		{
 			return AllocationTraits::ReleaseImpl();
 		}
+		STDMETHODIMP GetRuntimeClassName(HSTRING *) noexcept override
+		{
+			return E_NOTIMPL;
+		}
 	};
 #pragma endregion
 
@@ -341,6 +345,11 @@ namespace MTL
 		}
 	public:
 		ComPtr() noexcept = default;
+		explicit ComPtr(Interface * value) noexcept
+			: m_ptr(value)
+		{
+
+		}
 		ComPtr(ComPtr const & other) noexcept
 			: m_ptr(other.m_ptr)
 		{

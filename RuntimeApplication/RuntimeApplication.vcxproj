@@ -94,6 +94,24 @@
   <PropertyGroup>
     <PackageCertificateKeyFile>RuntimeApplication_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
@@ -111,6 +129,12 @@
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
@@ -129,6 +153,12 @@
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -147,6 +177,12 @@
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -165,6 +201,12 @@
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -183,6 +225,12 @@
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -201,6 +249,12 @@
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="App.xaml.h">

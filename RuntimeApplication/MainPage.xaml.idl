@@ -4,9 +4,6 @@ import "Windows.UI.Xaml.Controls.idl";
 namespace RuntimeApplication
 {
 	interface IMainPage;
-}
-namespace RuntimeApplication
-{
 	runtimeclass MainPage;
 }
 
