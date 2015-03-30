@@ -35,27 +35,35 @@ namespace MTL
 
 #pragma region Cloaked traits
 	template <typename Interface>
-	struct Cloaked : Interface
+	struct Cloaked : Interface {};
+
+	template <typename Interface>
+	struct IsCloaked : std::false_type {};
+
+	template <typename Interface>
+	struct IsCloaked<Cloaked<Interface>> : std::true_type{};
+#pragma endregion
+
+#pragma region Inherited traits
+	template <typename Interface>
+	struct Inherited
 	{
+		using Base = Interface;
 	};
 
 	template <typename Interface>
-	struct IsCloaked : std::false_type
-	{
-	};
+	struct IsInherited : std::false_type {};
 
 	template <typename Interface>
-	struct IsCloaked<Cloaked<Interface>> : std::true_type
-	{
-	};
+	struct IsInherited<Inherited<Interface>> :std::true_type{};
 #pragma endregion
 
 #pragma region Static ckecks
 	template <typename Interface>
 	struct RuntimeClassCheck : Interface
 	{
-		static_assert(std::is_base_of<IUnknown, Interface>::value, "IUnknown check failed");
-		static_assert(std::is_base_of<IInspectable, Interface>::value || std::is_base_of<IUnknown, Interface>::value, "IInspectable check failed");
+		static_assert(std::is_base_of<IUnknown, Interface>::value || IsInherited<Interface>::value, "IUnknown check failed");
+		static_assert(std::is_base_of<IInspectable, Interface>::value || std::is_base_of<IUnknown, Interface>::value || IsInherited<Interface>::value, "IInspectable check failed");
 	};
 #pragma endregion
 
@@ -127,7 +135,7 @@ namespace MTL
 		template <typename Head, typename ... Tail>
 		void* QueryInterfaceImpl(GUID const& id) noexcept
 		{
-			if (!IsCloaked<Head>::value && id == __uuidof(Head))
+			if (!IsInherited<Head>::value && !IsCloaked<Head>::value && id == __uuidof(Head))
 			{
 				return static_cast<Head *>(this);
 			}
@@ -164,6 +172,8 @@ namespace MTL
 		{
 			return 0;
 		}
+	protected:
+		using Base = RuntimeClassBase;
 	public:
 		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override
 		{
