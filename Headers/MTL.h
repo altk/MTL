@@ -33,273 +33,6 @@ namespace MTL
 	}
 #pragma endregion
 
-#pragma region Cloaked traits
-	template <typename Interface>
-	struct Cloaked : Interface {};
-
-	template <typename Interface>
-	struct IsCloaked : std::false_type {};
-
-	template <typename Interface>
-	struct IsCloaked<Cloaked<Interface>> : std::true_type{};
-#pragma endregion
-
-#pragma region Inherited traits
-	template <typename Interface>
-	struct Inherited
-	{
-		using Base = Interface;
-	};
-
-	template <typename Interface>
-	struct IsInherited : std::false_type {};
-
-	template <typename Interface>
-	struct IsInherited<Inherited<Interface>> :std::true_type{};
-#pragma endregion
-
-#pragma region Static ckecks
-	template <typename Interface>
-	struct RuntimeClassCheck : Interface
-	{
-		static_assert(std::is_base_of<IUnknown, Interface>::value || IsInherited<Interface>::value, "IUnknown check failed");
-		static_assert(std::is_base_of<IInspectable, Interface>::value || std::is_base_of<IUnknown, Interface>::value || IsInherited<Interface>::value, "IInspectable check failed");
-	};
-#pragma endregion
-
-#pragma region Allocation strategy classes
-	class DECLSPEC_NOVTABLE HeapAllocationStrategy : public IInspectable
-	{
-		static volatile ULONG & getObjectCount() noexcept
-		{
-			static volatile ULONG m_objectCount = 0;
-			return m_objectCount;
-		}
-		volatile ULONG m_references = 1;
-	protected:
-		HeapAllocationStrategy() noexcept
-		{
-			InterlockedIncrement(&getObjectCount());
-		}
-		virtual ~HeapAllocationStrategy() noexcept
-		{
-			InterlockedDecrement(&getObjectCount());
-		}
-
-		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
-		{
-			return InterlockedIncrement(&m_references);
-		}
-		STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
-		{
-			auto const remaining = InterlockedDecrement(&m_references);
-			if (0 == remaining)
-			{
-				delete this;
-			}
-			return remaining;
-		}
-	public:
-		static ULONG GetObjectCount() noexcept
-		{
-			return getObjectCount();
-		}
-	};
-
-	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
-	{
-	protected:
-		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
-		{
-			return 1;
-		}
-		STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
-		{
-			return 1;
-		}
-	public:
-		void * operator new(std::size_t) = delete;
-		void * operator new[](std::size_t) = delete;
-		void operator delete(void *) = delete;
-		void operator delete[](void *) = delete;
-	};
-#pragma endregion
-
-#pragma region RuntimeClassBase template
-	template <typename AllocationTraits, typename HeadInterface, typename ... TailInterfaces>
-	class DECLSPEC_NOVTABLE RuntimeClassBase
-		: public AllocationTraits
-		, public RuntimeClassCheck<HeadInterface>
-		, public RuntimeClassCheck<TailInterfaces> ...
-	{
-		template <typename Head, typename ... Tail>
-		void* QueryInterfaceImpl(GUID const& id) noexcept
-		{
-			if (!IsInherited<Head>::value && !IsCloaked<Head>::value && id == __uuidof(Head))
-			{
-				return static_cast<Head *>(this);
-			}
-			return QueryInterfaceImpl<Tail...>(id);
-		}
-		template <int = 0>
-		void* QueryInterfaceImpl(GUID const&) noexcept
-		{
-			return nullptr;
-		}
-
-		template <typename Head, typename ... Tail>
-		void GetIidsImpl(GUID* ids) noexcept
-		{
-			if (!IsCloaked<Head>::value)
-			{
-				*ids++ = __uuidof(Head);
-			}
-			GetIidsImpl<Tail ...>(ids);
-		}
-		template <int = 0>
-		void GetIidsImpl(GUID*) noexcept
-		{
-			return;
-		}
-
-		template <typename Head, typename ... Tail>
-		SIZE_T CountInterfaces() noexcept
-		{
-			return !IsCloaked<Head>::value + CountInterfaces<Tail...>();
-		}
-		template <int = 0>
-		SIZE_T CountInterfaces() noexcept
-		{
-			return 0;
-		}
-	protected:
-		using Base = RuntimeClassBase;
-	public:
-		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override
-		{
-			if (id == __uuidof(HeadInterface) ||
-				id == __uuidof(IUnknown) ||
-				id == __uuidof(IInspectable))
-			{
-				*object = static_cast<HeadInterface *>(this);
-			}
-			else if (nullptr == (*object = QueryInterfaceImpl<TailInterfaces...>(id)))
-			{
-				return E_NOINTERFACE;
-			}
-			static_cast<IUnknown *>(*object)->AddRef();
-			return S_OK;
-		}
-		STDMETHODIMP GetIids(ULONG* count, GUID** array) noexcept override
-		{
-			*count = CountInterfaces<HeadInterface, TailInterfaces...>();
-			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
-			if (nullptr == *array)
-			{
-				return E_OUTOFMEMORY;
-			}
-			GetIidsImpl<HeadInterface, TailInterfaces...>(*array);
-
-			return S_OK;
-		}
-		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) noexcept override
-		{
-			*trustLevel = BaseTrust;
-			return S_OK;
-		}
-		STDMETHODIMP_(ULONG) AddRef() noexcept override
-		{
-			return AllocationTraits::AddRefImpl();
-		}
-		STDMETHODIMP_(ULONG) Release() noexcept override final
-		{
-			return AllocationTraits::ReleaseImpl();
-		}
-		STDMETHODIMP GetRuntimeClassName(HSTRING *) noexcept override
-		{
-			return E_NOTIMPL;
-		}
-	};
-#pragma endregion
-
-#pragma region RuntimeClass template
-	template <typename ... Interfaces>
-	using RuntimeClass = RuntimeClassBase<HeapAllocationStrategy, Interfaces...>;
-#pragma endregion
-
-#pragma region ActivationFactory template
-	template <typename RuntimeClassType, typename ... FactoryInterfaces >
-	class DECLSPEC_NOVTABLE ActivationFactory : public RuntimeClassBase < StackAllocationStrategy, IActivationFactory, IAgileObject, FactoryInterfaces...>
-	{
-	protected:
-		template < typename RuntimeClassInterface, typename ... Args >
-		STDMETHODIMP ActivateInstanceImpl(RuntimeClassInterface** result, Args&& ... args) noexcept
-		{
-			if (nullptr == result)
-			{
-				return E_INVALIDARG;
-			}
-			*result = new(std::nothrow) RuntimeClassType(std::forward<Args>(args)...);
-			return *result ? S_OK : E_OUTOFMEMORY;
-		}
-	public:
-		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
-		{
-			return E_ILLEGAL_METHOD_CALL;;
-		}
-	};
-#pragma endregion
-
-#pragma region Module template
-	template < typename ... Factories>
-	class Module;
-
-	template<>
-	class DECLSPEC_NOVTABLE Module < >
-	{
-	protected:
-		HRESULT GetActivationFactoryImpl(HSTRING, IActivationFactory**) noexcept
-		{
-			return E_NOINTERFACE;
-		}
-	};
-
-	template < typename HeadFactory, typename ... TailFactories >
-	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
-	{
-		static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
-		HeadFactory m_factory;
-	protected:
-		Module() noexcept {}
-
-		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) noexcept
-		{
-			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
-			{
-				*factory = &m_factory;
-				return S_OK;
-			}
-			return Module<TailFactories...>::GetActivationFactoryImpl(activatableClassId, factory);
-		}
-	public:
-		static Module& GetModule() noexcept
-		{
-			static Module singleton;
-			return singleton;
-		}
-
-		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) noexcept
-		{
-			BOOL hasEmbedNull;
-			if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
-			{
-				return E_INVALIDARG;
-			}
-			return GetActivationFactoryImpl(activatableClassId, factory);
-		}
-	};
-#pragma endregion
-
 #pragma region RemoveAddRefRelease
 	template <typename Interface>
 	class RemoveAddRefRelease : public Interface
@@ -460,6 +193,306 @@ namespace MTL
 	{
 		left.Swap(right);
 	}
+#pragma endregion
+
+#pragma region RuntimeClass traits
+	template <typename Interface>
+	struct Cloaked : Interface {};
+
+	template <typename Interface>
+	class Inherited
+	{
+		static_assert(std::is_base_of<IUnknown, Interface>::value, "IUnknown check failed");
+	protected:
+		ComPtr<Interface> m_interface;
+	};
+
+	template <typename Interface>
+	struct RuntimeClassTraits : Interface
+	{
+		static_assert(std::is_base_of<IUnknown, Interface>::value, "IUnknown check failed");
+		static_assert(std::is_base_of<IInspectable, Interface>::value || std::is_base_of<IUnknown, Interface>::value, "IInspectable check failed");
+
+		inline static bool Check(GUID const& id) noexcept
+		{
+			return __uuidof(Interface) == id;
+		}
+		inline static void * Get(RuntimeClassTraits * object) noexcept
+		{
+			return static_cast<Interface *>(object);
+		}
+		inline static constexpr bool IsPublic() noexcept
+		{
+			return false;
+		}
+	};
+
+	template <typename Interface>
+	struct RuntimeClassTraits<Inherited<Interface>> : Inherited<Interface>
+	{
+		inline static bool Check(GUID const& id) noexcept
+		{
+			return __uuidof(Interface) == id;
+		}
+		inline static void * Get(RuntimeClassTraits * object) noexcept
+		{
+			return static_cast<Interface *>(object->m_interface.Get());
+		}
+		inline static constexpr bool IsPublic() noexcept
+		{
+			return true;
+		}
+	};
+
+	template <typename Interface>
+	struct RuntimeClassTraits<Cloaked<Interface>> : Cloaked<Interface>
+	{
+		inline static constexpr bool Check(GUID const& id) noexcept
+		{
+			return false;
+		}
+		inline static void * Get(RuntimeClassTraits * object) noexcept
+		{
+			return nullptr;
+		}
+		inline static constexpr bool IsPublic() noexcept
+		{
+			return false;
+		}
+	};
+#pragma endregion
+
+#pragma region Allocation strategy classes
+	class DECLSPEC_NOVTABLE HeapAllocationStrategy : public IInspectable
+	{
+		static volatile ULONG & getObjectCount() noexcept
+		{
+			static volatile ULONG m_objectCount = 0;
+			return m_objectCount;
+		}
+		volatile ULONG m_references = 1;
+	protected:
+		HeapAllocationStrategy() noexcept
+		{
+			InterlockedIncrement(&getObjectCount());
+		}
+		virtual ~HeapAllocationStrategy() noexcept
+		{
+			InterlockedDecrement(&getObjectCount());
+		}
+
+		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
+		{
+			return InterlockedIncrement(&m_references);
+		}
+		STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
+		{
+			auto const remaining = InterlockedDecrement(&m_references);
+			if (0 == remaining)
+			{
+				delete this;
+			}
+			return remaining;
+		}
+	public:
+		static ULONG GetObjectCount() noexcept
+		{
+			return getObjectCount();
+		}
+	};
+
+	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
+	{
+	protected:
+		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
+		{
+			return 1;
+		}
+		STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
+		{
+			return 1;
+		}
+	public:
+		void * operator new(std::size_t) = delete;
+		void * operator new[](std::size_t) = delete;
+		void operator delete(void *) = delete;
+		void operator delete[](void *) = delete;
+	};
+#pragma endregion
+
+#pragma region RuntimeClassBase template
+	template <typename AllocationTraits, typename HeadInterface, typename ... TailInterfaces>
+	class DECLSPEC_NOVTABLE RuntimeClassBase
+		: public AllocationTraits
+		, public RuntimeClassTraits<HeadInterface>
+		, public RuntimeClassTraits<TailInterfaces> ...
+	{
+		template <typename Head, typename ... Tail>
+		void* QueryInterfaceImpl(GUID const& id) noexcept
+		{
+			if (RuntimeClassTraits<Head>::Check(id))
+			{
+				return RuntimeClassTraits<Head>::Get(this);
+			}
+			return QueryInterfaceImpl<Tail...>(id);
+		}
+		template <int = 0>
+		void* QueryInterfaceImpl(GUID const&) noexcept
+		{
+			return nullptr;
+		}
+
+		template <typename Head, typename ... Tail>
+		void GetIidsImpl(GUID* ids) noexcept
+		{
+			if (RuntimeClassTraits<Head>::IsPublic())
+			{
+				*ids++ = __uuidof(Head);
+			}
+			GetIidsImpl<Tail ...>(ids);
+		}
+		template <int = 0>
+		void GetIidsImpl(GUID*) noexcept
+		{
+			return;
+		}
+
+		template <typename Head, typename ... Tail>
+		constexpr SIZE_T CountInterfaces() noexcept
+		{
+			return RuntimeClassTraits<Head>::IsPublic() + CountInterfaces<Tail...>();
+		}
+		template <int = 0>
+		constexpr SIZE_T CountInterfaces() noexcept
+		{
+			return 0;
+		}
+	protected:
+		using baseRuntimeClassType = RuntimeClassBase;
+	public:
+		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override
+		{
+			if (id == __uuidof(HeadInterface) ||
+				id == __uuidof(IUnknown) ||
+				id == __uuidof(IInspectable))
+			{
+				*object = RuntimeClassTraits<HeadInterface>::Get(this);
+			}
+			else if (nullptr == (*object = QueryInterfaceImpl<TailInterfaces...>(id)))
+			{
+				return E_NOINTERFACE;
+			}
+			static_cast<IUnknown *>(*object)->AddRef();
+			return S_OK;
+		}
+		STDMETHODIMP GetIids(ULONG* count, GUID** array) noexcept override
+		{
+			*count = CountInterfaces<HeadInterface, TailInterfaces...>();
+			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
+			if (nullptr == *array)
+			{
+				return E_OUTOFMEMORY;
+			}
+			GetIidsImpl<HeadInterface, TailInterfaces...>(*array);
+
+			return S_OK;
+		}
+		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) noexcept override
+		{
+			*trustLevel = BaseTrust;
+			return S_OK;
+		}
+		STDMETHODIMP_(ULONG) AddRef() noexcept override
+		{
+			return AllocationTraits::AddRefImpl();
+		}
+		STDMETHODIMP_(ULONG) Release() noexcept override final
+		{
+			return AllocationTraits::ReleaseImpl();
+		}
+		STDMETHODIMP GetRuntimeClassName(HSTRING *) noexcept override
+		{
+			return E_NOTIMPL;
+		}
+	};
+#pragma endregion
+
+#pragma region RuntimeClass template
+	template <typename ... Interfaces>
+	using RuntimeClass = RuntimeClassBase<HeapAllocationStrategy, Interfaces...>;
+#pragma endregion
+
+#pragma region ActivationFactory template
+	template <typename RuntimeClassType, typename ... FactoryInterfaces >
+	class DECLSPEC_NOVTABLE ActivationFactory : public RuntimeClassBase < StackAllocationStrategy, IActivationFactory, IAgileObject, FactoryInterfaces...>
+	{
+	protected:
+		template < typename RuntimeClassInterface, typename ... Args >
+		STDMETHODIMP ActivateInstanceImpl(RuntimeClassInterface** result, Args&& ... args) noexcept
+		{
+			if (nullptr == result)
+			{
+				return E_INVALIDARG;
+			}
+			*result = new(std::nothrow) RuntimeClassType(std::forward<Args>(args)...);
+			return *result ? S_OK : E_OUTOFMEMORY;
+		}
+	public:
+		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
+		{
+			return E_ILLEGAL_METHOD_CALL;;
+		}
+	};
+#pragma endregion
+
+#pragma region Module template
+	template < typename ... Factories>
+	class Module;
+
+	template<>
+	class DECLSPEC_NOVTABLE Module < >
+	{
+	protected:
+		HRESULT GetActivationFactoryImpl(HSTRING, IActivationFactory**) noexcept
+		{
+			return E_NOINTERFACE;
+		}
+	};
+
+	template < typename HeadFactory, typename ... TailFactories >
+	class DECLSPEC_NOVTABLE Module<HeadFactory, TailFactories...> : public Module < TailFactories... >
+	{
+		static_assert(std::is_base_of<StackAllocationStrategy, HeadFactory>::value, "Factory must derive from StackAllocationStrategy");
+		HeadFactory m_factory;
+	protected:
+		Module() noexcept {}
+
+		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) noexcept
+		{
+			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
+			{
+				*factory = &m_factory;
+				return S_OK;
+			}
+			return Module<TailFactories...>::GetActivationFactoryImpl(activatableClassId, factory);
+		}
+	public:
+		static Module& GetModule() noexcept
+		{
+			static Module singleton;
+			return singleton;
+		}
+
+		HRESULT GetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) noexcept
+		{
+			BOOL hasEmbedNull;
+			if (WindowsIsStringEmpty(activatableClassId) || FAILED(WindowsStringHasEmbeddedNull(activatableClassId, &hasEmbedNull)) || hasEmbedNull == TRUE || nullptr == factory)
+			{
+				return E_INVALIDARG;
+			}
+			return GetActivationFactoryImpl(activatableClassId, factory);
+		}
+	};
 #pragma endregion
 }
 

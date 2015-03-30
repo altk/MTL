@@ -21,16 +21,17 @@ namespace RuntimeApplication
 {
 	class App sealed : public RuntimeClass<Inherited<IApplication>, IApplicationOverrides, IXamlMetadataProvider, IAgileObject>
 	{
+		using baseApplicationType = Inherited<IApplication>;
+
 		ComPtr<IInspectable> m_inspectable;
 		ComPtr<IApplicationOverrides> m_applicationOverrides;
-		ComPtr<IApplication> m_application;
 	public:
 		App() noexcept
 		{
 			ComPtr<IApplicationFactory> applicationFactory;
 			VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), applicationFactory.GetAddressOf()));
 
-			VERIFY_SUCCEEDED(applicationFactory->CreateInstance(static_cast<IApplicationOverrides *>(this), m_inspectable.GetAddressOf(), m_application.GetAddressOf()));
+			VERIFY_SUCCEEDED(applicationFactory->CreateInstance(static_cast<IApplicationOverrides *>(this), m_inspectable.GetAddressOf(), baseApplicationType::m_interface.GetAddressOf()));
 
 			m_applicationOverrides = m_inspectable.As<IApplicationOverrides>();
 		}
@@ -84,16 +85,6 @@ namespace RuntimeApplication
 		{
 			return S_OK;
 		}
-
-		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override final
-		{
-			if (__uuidof(IApplication) == id)
-			{
-				m_application.CopyTo(reinterpret_cast<IApplication **>(object));
-				return S_OK;
-			}
-			return Base::QueryInterface(id, object);
-		}
 	};
 
 	class ApplicationInitializationCallback sealed : public RuntimeClass<IApplicationInitializationCallback>
@@ -101,7 +92,7 @@ namespace RuntimeApplication
 	public:
 		STDMETHODIMP Invoke(IApplicationInitializationCallbackParams *) noexcept override final
 		{
-			new App();
+			ComPtr<App> app{ new App() };
 			return S_OK;
 		}
 	};
