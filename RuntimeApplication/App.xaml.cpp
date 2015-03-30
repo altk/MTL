@@ -6,6 +6,8 @@
 #include <windows.ui.xaml.controls.h>
 #include <windows.ui.xaml.controls.primitives.h>
 #include <windows.foundation.h>
+#include "MainPageActivationFactory.h"
+#include "MainPage.xaml.h"
 
 using namespace MTL;
 using namespace MTL::Wrappers;
@@ -16,6 +18,7 @@ using namespace ABI::Windows::UI::Xaml::Controls::Primitives;
 using namespace ABI::Windows::UI::Xaml::Interop;
 using namespace ABI::Windows::UI::Xaml::Markup;
 using namespace ABI::Windows::Foundation;
+using namespace ABI::RuntimeApplication;
 
 namespace RuntimeApplication
 {
@@ -83,11 +86,23 @@ namespace RuntimeApplication
 		}
 		STDMETHODIMP OnLaunched(ILaunchActivatedEventArgs *args) noexcept override final
 		{
+			ComPtr<IWindowStatics> windowStatics;
+			VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Window).Get(), windowStatics.GetAddressOf()));
+
+			ComPtr<IWindow> window;
+			VERIFY_SUCCEEDED(windowStatics->get_Current(window.GetAddressOf()));
+
+			ComPtr<IMainPage> mainPage;
+			VERIFY_SUCCEEDED(ActivateInstance(HStringReference(RuntimeClass_RuntimeApplication_MainPage).Get(), mainPage.GetAddressOf()));
+
+			/*ComPtr<IUIElement> element;
+			VERIFY_SUCCEEDED(window->get_Content(element.GetAddressOf()));*/
+
 			return S_OK;
 		}
 	};
 
-	class ApplicationInitializationCallback sealed : public RuntimeClass<IApplicationInitializationCallback>
+	class ApplicationInitializationCallback sealed : public RuntimeClassBase<StackAllocationStrategy, IApplicationInitializationCallback>
 	{
 	public:
 		STDMETHODIMP Invoke(IApplicationInitializationCallbackParams *) noexcept override final
@@ -105,23 +120,16 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 	ComPtr<IApplicationStatics> applicationStatics;
 	VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), applicationStatics.GetAddressOf()));
 
-	ComPtr<RuntimeApplication::ApplicationInitializationCallback> applicationInitializationCallback(new RuntimeApplication::ApplicationInitializationCallback());
-	applicationStatics->Start(applicationInitializationCallback.Get());
+	RuntimeApplication::ApplicationInitializationCallback callback;
+	applicationStatics->Start(&callback);
 }
-//
-//int main(int, HSTRING *)
-//{
-//	ComPtr<IApplicationStatics> applicationStatics;
-//	VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), applicationStatics.GetAddressOf()));
-//
-//	applicationStatics->Start()
-//
-//	/*ComPtr
-//
-//	auto hr = Windows::Foundation::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), pAppStatics.GetAddressOf());
-//	if (SUCCEEDED(hr)) {
-//		Microsoft::WRL::ComPtr<App::AppInit> appInit = Microsoft::WRL::Make<App::AppInit>();
-//		hr = pAppStatics->Start(appInit.Get());
-//	}*/
-//	return (FAILED(hr)) ? 0 : -1;
-//}
+
+HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) noexcept
+{
+	return Module<RuntimeApplication::MainPageActivationFactory>::GetModule().GetActivationFactory(activatableClassId, factory);
+}
+
+HRESULT WINAPI DllCanUnloadNow() noexcept
+{
+	return HeapAllocationStrategy::GetObjectCount() == 0 ? S_OK : S_FALSE;
+}

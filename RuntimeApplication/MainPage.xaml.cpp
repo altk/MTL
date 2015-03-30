@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "MainPage.xaml.h"
+#include "MainPageActivationFactory.h"
 
 using namespace MTL;
 using namespace MTL::Wrappers;
@@ -9,18 +10,18 @@ using namespace ABI::Windows::UI::Xaml::Controls;
 using namespace ABI::Windows::UI::Xaml::Controls::Primitives;
 using namespace ABI::Windows::Foundation;
 
-class ABI::RuntimeApplication::MainPage sealed : public RuntimeClass<IMainPage, IPage, IUserControl, IControl, IFrameworkElement, IUIElement, IDependencyObject, IControlProtected>
+class ABI::RuntimeApplication::MainPage sealed : public RuntimeClass<Inherited<IPage>, IMainPage>
 {
+	using basePageType = Inherited<IPage>;
+
 	bool m_contentLoaded = false;
-	ComPtr<IPage> m_basePage;
 public:
 	MainPage() noexcept
 	{
 		ComPtr<IPageFactory> pageFactory;
 		VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Controls_Page).Get(), pageFactory.GetAddressOf()));
 
-		VERIFY_SUCCEEDED(pageFactory->CreateInstance(static_cast<IMainPage *>(this), nullptr, m_basePage.GetAddressOf()));
-
+		VERIFY_SUCCEEDED(pageFactory->CreateInstance(static_cast<IMainPage *>(this), nullptr, basePageType::m_interface.GetAddressOf()));
 		InitializeComponent();
 	}
 
@@ -44,3 +45,8 @@ public:
 		return S_OK;
 	}
 };
+
+STDMETHODIMP RuntimeApplication::MainPageActivationFactory::ActivateInstance(IInspectable** result) noexcept
+{
+	return ActivateInstanceImpl(reinterpret_cast<IMainPage **>(result));
+}

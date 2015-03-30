@@ -26,6 +26,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h" />
+    <ClInclude Include="MainPageActivationFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\WideLogo.scale-100.png">
@@ -37,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="RuntimeApplication_TemporaryKey.pfx" />
+    <None Include="RuntimeApplication.def" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MainPage.xaml.idl" />
