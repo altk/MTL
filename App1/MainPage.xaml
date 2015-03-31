@@ -5,12 +5,8 @@
     xmlns:local="using:App1"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:rc="using:RuntimeComponent"
     mc:Ignorable="d">
-    <Page.DataContext>
-        <rc:TestClass/>
-    </Page.DataContext>
-
+    
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
         <TextBlock Text="{Binding Str}" Foreground="Red" FontSize="30"/>
     </StackPanel>

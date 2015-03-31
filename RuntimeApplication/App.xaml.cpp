@@ -92,11 +92,17 @@ namespace RuntimeApplication
 			ComPtr<IWindow> window;
 			VERIFY_SUCCEEDED(windowStatics->get_Current(window.GetAddressOf()));
 
-			ComPtr<IMainPage> mainPage;
-			VERIFY_SUCCEEDED(ActivateInstance(HStringReference(RuntimeClass_RuntimeApplication_MainPage).Get(), mainPage.GetAddressOf()));
+			auto module = Module<MainPageActivationFactory>::GetModule();
 
-			/*ComPtr<IUIElement> element;
-			VERIFY_SUCCEEDED(window->get_Content(element.GetAddressOf()));*/
+			ComPtr<IActivationFactory> mainPageFactory;
+			VERIFY_SUCCEEDED(module.GetActivationFactory(HStringReference(RuntimeClass_RuntimeApplication_MainPage).Get(), mainPageFactory.GetAddressOf()));
+
+			ComPtr<IInspectable> mainPageInspectable;
+			VERIFY_SUCCEEDED(mainPageFactory->ActivateInstance(mainPageInspectable.GetAddressOf()));
+
+			VERIFY_SUCCEEDED(window->put_Content(mainPageInspectable.As<IUIElement>().Get()));
+
+			VERIFY_SUCCEEDED(window->Activate());
 
 			return S_OK;
 		}
@@ -122,14 +128,4 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 
 	RuntimeApplication::ApplicationInitializationCallback callback;
 	applicationStatics->Start(&callback);
-}
-
-HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId, IActivationFactory** factory) noexcept
-{
-	return Module<RuntimeApplication::MainPageActivationFactory>::GetModule().GetActivationFactory(activatableClassId, factory);
-}
-
-HRESULT WINAPI DllCanUnloadNow() noexcept
-{
-	return HeapAllocationStrategy::GetObjectCount() == 0 ? S_OK : S_FALSE;
 }

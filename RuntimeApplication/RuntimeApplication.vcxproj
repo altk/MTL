@@ -128,7 +128,6 @@
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>RuntimeApplication.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
@@ -153,7 +152,6 @@
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>RuntimeApplication.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
@@ -178,7 +176,6 @@
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>RuntimeApplication.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
@@ -203,7 +200,6 @@
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>RuntimeApplication.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
@@ -228,7 +224,6 @@
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>RuntimeApplication.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
@@ -253,7 +248,6 @@
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>RuntimeApplication.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>del "$(OutDir)$(TargetName).winmd" &amp;&amp; mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
@@ -295,7 +289,6 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="RuntimeApplication.def" />
     <None Include="RuntimeApplication_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
