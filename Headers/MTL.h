@@ -1,5 +1,4 @@
 #pragma once
-#include <roapi.h>
 #include <Windows.h>
 #include <winstring.h>
 #include <inspectable.h>
@@ -24,7 +23,7 @@ namespace MTL
 		}
 	};
 
-	void Check(HRESULT const result)
+	inline void Check(HRESULT const result)
 	{
 		if (S_OK != result)
 		{
@@ -195,75 +194,26 @@ namespace MTL
 	}
 #pragma endregion
 
-#pragma region RuntimeClass traits
+#pragma region RuntimeClass utilities
 	template <typename Interface>
 	struct Cloaked : Interface {};
 
 	template <typename Interface>
-	class Inherited
-	{
-		static_assert(std::is_base_of<IUnknown, Interface>::value, "IUnknown check failed");
-	protected:
-		ComPtr<Interface> m_interface;
-	};
+	struct IsCloaked : std::false_type {};
+
+	template <typename Interface>
+	struct IsCloaked <Cloaked<Interface>> : std::true_type {};
 
 	template <typename Interface>
 	struct RuntimeClassTraits : Interface
 	{
 		static_assert(std::is_base_of<IUnknown, Interface>::value, "IUnknown check failed");
 		static_assert(std::is_base_of<IInspectable, Interface>::value || std::is_base_of<IUnknown, Interface>::value, "IInspectable check failed");
-
-		inline static bool Check(GUID const& id) noexcept
-		{
-			return __uuidof(Interface) == id;
-		}
-		inline static void * Get(RuntimeClassTraits * object) noexcept
-		{
-			return static_cast<Interface *>(object);
-		}
-		inline static constexpr bool IsPublic() noexcept
-		{
-			return false;
-		}
-	};
-
-	template <typename Interface>
-	struct RuntimeClassTraits<Inherited<Interface>> : Inherited<Interface>
-	{
-		inline static bool Check(GUID const& id) noexcept
-		{
-			return __uuidof(Interface) == id;
-		}
-		inline static void * Get(RuntimeClassTraits * object) noexcept
-		{
-			return static_cast<Interface *>(object->m_interface.Get());
-		}
-		inline static constexpr bool IsPublic() noexcept
-		{
-			return true;
-		}
-	};
-
-	template <typename Interface>
-	struct RuntimeClassTraits<Cloaked<Interface>> : Cloaked<Interface>
-	{
-		inline static constexpr bool Check(GUID const& id) noexcept
-		{
-			return false;
-		}
-		inline static void * Get(RuntimeClassTraits * object) noexcept
-		{
-			return nullptr;
-		}
-		inline static constexpr bool IsPublic() noexcept
-		{
-			return false;
-		}
 	};
 #pragma endregion
 
 #pragma region Allocation strategy classes
-	class DECLSPEC_NOVTABLE HeapAllocationStrategy : public IInspectable
+	class DECLSPEC_NOVTABLE HeapAllocationStrategy : public IUnknown
 	{
 		static volatile ULONG & getObjectCount() noexcept
 		{
@@ -301,14 +251,16 @@ namespace MTL
 		}
 	};
 
-	class DECLSPEC_NOVTABLE StackAllocationStrategy : public IInspectable
+	template <typename HeadInterface, typename ... TailInterfaces>
+	class DECLSPEC_NOVTABLE StackAllocationStrategy
+		: public HeadInterface
+		, public TailInterfaces...
 	{
-	protected:
-		STDMETHODIMP_(ULONG) AddRefImpl() noexcept
+		inline STDMETHODIMP_(ULONG) AddRefImpl() noexcept
 		{
 			return 1;
 		}
-		STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
+		inline STDMETHODIMP_(ULONG) ReleaseImpl() noexcept
 		{
 			return 1;
 		}
@@ -317,6 +269,19 @@ namespace MTL
 		void * operator new[](std::size_t) = delete;
 		void operator delete(void *) = delete;
 		void operator delete[](void *) = delete;
+
+		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override
+		{
+			return E_NOTIMPL;
+		}
+		STDMETHODIMP_(ULONG) AddRef() noexcept override
+		{
+			return AddRefImpl();
+		}
+		STDMETHODIMP_(ULONG) Release() noexcept override
+		{
+			return ReleaseImpl();
+		}
 	};
 #pragma endregion
 
@@ -328,73 +293,85 @@ namespace MTL
 		, public RuntimeClassTraits<TailInterfaces> ...
 	{
 		template <typename Head, typename ... Tail>
-		void* QueryInterfaceImpl(GUID const& id) noexcept
+		inline void* QueryInterfaceImpl(GUID const& id) noexcept
 		{
-			if (RuntimeClassTraits<Head>::Check(id))
+			if (IsCloaked<Head>::value || __uuidof(Head) != id)
 			{
-				return RuntimeClassTraits<Head>::Get(this);
+				return QueryInterfaceImpl<Tail...>(id);
 			}
-			return QueryInterfaceImpl<Tail...>(id);
+			return static_cast<Head *>(this);
 		}
 		template <int = 0>
-		void* QueryInterfaceImpl(GUID const&) noexcept
+		inline void* QueryInterfaceImpl(GUID const&) noexcept
 		{
 			return nullptr;
 		}
 
 		template <typename Head, typename ... Tail>
-		void GetIidsImpl(GUID* ids) noexcept
+		inline void GetIidsImpl(GUID* ids) noexcept
 		{
-			if (RuntimeClassTraits<Head>::IsPublic())
+			if (!IsCloaked<Head>::value)
 			{
 				*ids++ = __uuidof(Head);
 			}
 			GetIidsImpl<Tail ...>(ids);
 		}
 		template <int = 0>
-		void GetIidsImpl(GUID*) noexcept
+		inline void GetIidsImpl(GUID*) noexcept
 		{
 			return;
 		}
 
 		template <typename Head, typename ... Tail>
-		constexpr SIZE_T CountInterfaces() noexcept
+		constexpr SIZE_T CountInterfacesImpl() noexcept
 		{
-			return RuntimeClassTraits<Head>::IsPublic() + CountInterfaces<Tail...>();
+			return !IsCloaked<Head>::value + CountInterfacesImpl<Tail...>();
 		}
 		template <int = 0>
-		constexpr SIZE_T CountInterfaces() noexcept
+		constexpr SIZE_T CountInterfacesImpl() noexcept
 		{
 			return 0;
 		}
 	protected:
 		using baseRuntimeClassType = RuntimeClassBase;
+		
+		constexpr SIZE_T BaseCountInterfaces() noexcept
+		{
+			return CountInterfacesImpl<HeadInterface, TailInterfaces...>();
+		}
+		void BaseGetIids(GUID *array) noexcept
+		{
+			GetIidsImpl<HeadInterface, TailInterfaces...>(array);
+		}
 	public:
 		STDMETHODIMP QueryInterface(GUID const& id, void** object) noexcept override
 		{
-			if (id == __uuidof(HeadInterface) ||
-				id == __uuidof(IUnknown) ||
-				id == __uuidof(IInspectable))
+			*object = QueryInterfaceImpl<TailInterfaces...>(id);
+			if(nullptr == *object)
 			{
-				*object = RuntimeClassTraits<HeadInterface>::Get(this);
-			}
-			else if (nullptr == (*object = QueryInterfaceImpl<TailInterfaces...>(id)))
-			{
-				return E_NOINTERFACE;
+				if (id == __uuidof(HeadInterface) ||
+					id == __uuidof(IUnknown) ||
+					id == __uuidof(IInspectable))
+				{
+					*object = this;
+				}
+				else
+				{
+					return E_NOINTERFACE;
+				}
 			}
 			static_cast<IUnknown *>(*object)->AddRef();
 			return S_OK;
 		}
 		STDMETHODIMP GetIids(ULONG* count, GUID** array) noexcept override
 		{
-			*count = CountInterfaces<HeadInterface, TailInterfaces...>();
+			*count = BaseCountInterfaces();
 			*array = static_cast<GUID *>(CoTaskMemAlloc(sizeof(GUID) * *count));
 			if (nullptr == *array)
 			{
 				return E_OUTOFMEMORY;
 			}
-			GetIidsImpl<HeadInterface, TailInterfaces...>(*array);
-
+			BaseGetIids(*array);
 			return S_OK;
 		}
 		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) noexcept override
@@ -409,8 +386,8 @@ namespace MTL
 		STDMETHODIMP_(ULONG) Release() noexcept override final
 		{
 			return AllocationTraits::ReleaseImpl();
-		}
-		STDMETHODIMP GetRuntimeClassName(HSTRING *) noexcept override
+		}		
+		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override
 		{
 			return E_NOTIMPL;
 		}
@@ -440,7 +417,7 @@ namespace MTL
 	public:
 		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
 		{
-			return E_ILLEGAL_METHOD_CALL;;
+			return E_ILLEGAL_METHOD_CALL;
 		}
 	};
 #pragma endregion
@@ -469,7 +446,7 @@ namespace MTL
 
 		HRESULT GetActivationFactoryImpl(HSTRING activatableClassId, IActivationFactory** factory) noexcept
 		{
-			if (0 == wcscmp(HeadFactory::GetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
+			if (0 == wcscmp(HeadFactory::GetTargetRuntimeClassName(), WindowsGetStringRawBuffer(activatableClassId, nullptr)))
 			{
 				*factory = &m_factory;
 				return S_OK;

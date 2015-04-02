@@ -17,16 +17,43 @@
     <Image Include="Assets\SplashScreen.scale-100.png">
       <Filter>Assets</Filter>
     </Image>
+    <Filter Include="MIDL">
+      <UniqueIdentifier>{03edfb3b-58d3-4f85-9a57-90789014ddd3}</UniqueIdentifier>
+      <Extensions>idl</Extensions>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{51d180df-2340-42af-ab44-3b0787b0f0fd}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{af88d346-a3a3-4a32-8e73-0550b47ec9c5}</UniqueIdentifier>
+      <Extensions>c;cpp</Extensions>
+    </Filter>
+    <Filter Include="XAML">
+      <UniqueIdentifier>{07809f7e-ed72-4a3f-b26b-e89d69c2f2ce}</UniqueIdentifier>
+      <Extensions>xaml</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.xaml.cpp" />
     <ClCompile Include="MainPage.xaml.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Sources\App.xaml.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\MainPage.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h" />
-    <ClInclude Include="MainPageActivationFactory.h" />
+    <ClInclude Include="Headers\App.xaml.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\MainPage.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\WideLogo.scale-100.png">
@@ -40,10 +67,16 @@
     <None Include="RuntimeApplication_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="MainPage.xaml.idl" />
+    <Midl Include="MIDL\MainPage.xaml.idl">
+      <Filter>MIDL</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="App.xaml" />
-    <Xml Include="MainPage.xaml" />
+    <Xml Include="XAML\MainPage.xaml">
+      <Filter>XAML</Filter>
+    </Xml>
+    <Xml Include="XAML\App.xaml">
+      <Filter>XAML</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

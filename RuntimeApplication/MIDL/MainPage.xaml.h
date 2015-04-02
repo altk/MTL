@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.00.0611 */
 /* at Tue Jan 19 06:14:07 2038
  */
-/* Compiler settings for C:\Users\drono\AppData\Local\Temp\MainPage.xaml.idl-1d923c9f:
+/* Compiler settings for C:\Users\drono\AppData\Local\Temp\MainPage.xaml.idl-67a855e3:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0611 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -73,6 +73,7 @@ namespace ABI {
 /* header files for imported files */
 #include "Inspectable.h"
 #include "Windows.UI.Xaml.Controls.h"
+#include "Windows.UI.Xaml.Markup.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -127,8 +128,6 @@ EXTERN_C const IID IID___x_ABI_CRuntimeApplication_CIMainPage;
             IMainPage : public IInspectable
             {
             public:
-                virtual HRESULT STDMETHODCALLTYPE InitializeComponent( void) = 0;
-                
             };
 
             extern const __declspec(selectany) IID & IID_IMainPage = __uuidof(IMainPage);
@@ -169,9 +168,6 @@ EXTERN_C const IID IID___x_ABI_CRuntimeApplication_CIMainPage;
             __x_ABI_CRuntimeApplication_CIMainPage * This,
             /* [out] */ TrustLevel *trustLevel);
         
-        HRESULT ( STDMETHODCALLTYPE *InitializeComponent )( 
-            __x_ABI_CRuntimeApplication_CIMainPage * This);
-        
         END_INTERFACE
     } __x_ABI_CRuntimeApplication_CIMainPageVtbl;
 
@@ -204,9 +200,6 @@ EXTERN_C const IID IID___x_ABI_CRuntimeApplication_CIMainPage;
 #define __x_ABI_CRuntimeApplication_CIMainPage_GetTrustLevel(This,trustLevel)	\
     ( (This)->lpVtbl -> GetTrustLevel(This,trustLevel) ) 
 
-
-#define __x_ABI_CRuntimeApplication_CIMainPage_InitializeComponent(This)	\
-    ( (This)->lpVtbl -> InitializeComponent(This) ) 
 
 #endif /* COBJMACROS */
 

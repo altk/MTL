@@ -10,5 +10,6 @@
 #include <Windows.h>
 #include <activation.h>
 #include <new>
+#include <roapi.h>
 
 //#include "App.xaml.h"

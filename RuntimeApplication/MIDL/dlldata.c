@@ -19,13 +19,11 @@
 extern "C"   {
 #endif
 
-EXTERN_PROXY_FILE( MainPage )
 EXTERN_PROXY_FILE( MainPage2Examl )
 
 
 PROXYFILE_LIST_START
 /* Start of list */
-  REFERENCE_PROXY_FILE( MainPage ),
   REFERENCE_PROXY_FILE( MainPage2Examl ),
 /* End of list */
 PROXYFILE_LIST_END

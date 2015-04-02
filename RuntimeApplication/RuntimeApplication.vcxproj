@@ -116,7 +116,7 @@
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Headers;$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
@@ -125,6 +125,10 @@
       <AdditionalMetadataDirectories>$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral</AdditionalMetadataDirectories>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
       <TypeLibraryName />
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+      <OutputDirectory>$(ProjectDir)Midl</OutputDirectory>
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -140,7 +144,7 @@
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Headers;$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
@@ -149,6 +153,10 @@
       <AdditionalMetadataDirectories>$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral</AdditionalMetadataDirectories>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
       <TypeLibraryName />
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+      <OutputDirectory>$(ProjectDir)Midl</OutputDirectory>
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -164,7 +172,7 @@
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Headers;$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
@@ -173,6 +181,10 @@
       <AdditionalMetadataDirectories>$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral</AdditionalMetadataDirectories>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
       <TypeLibraryName />
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+      <OutputDirectory>$(ProjectDir)Midl</OutputDirectory>
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -188,7 +200,7 @@
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Headers;$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
@@ -197,6 +209,10 @@
       <AdditionalMetadataDirectories>$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral</AdditionalMetadataDirectories>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
       <TypeLibraryName />
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+      <OutputDirectory>$(ProjectDir)Midl</OutputDirectory>
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -212,7 +228,7 @@
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Headers;$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
@@ -221,6 +237,10 @@
       <AdditionalMetadataDirectories>$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral</AdditionalMetadataDirectories>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
       <TypeLibraryName />
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+      <OutputDirectory>$(ProjectDir)Midl</OutputDirectory>
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -236,7 +256,7 @@
     <ClCompile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Headers;$(SolutionDir)\Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
@@ -245,6 +265,10 @@
       <AdditionalMetadataDirectories>$(TargetPlatformWinMDLocation)\CommonConfiguration\Neutral</AdditionalMetadataDirectories>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
       <TypeLibraryName />
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+      <OutputDirectory>$(ProjectDir)Midl</OutputDirectory>
     </Midl>
     <Link>
       <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -257,33 +281,9 @@
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="App.xaml.h">
-      <DependentUpon>App.xaml</DependentUpon>
-    </ClInclude>
-    <ClInclude Include="MainPageActivationFactory.h" />
+    <ClInclude Include="Headers\App.xaml.h" />
+    <ClInclude Include="Headers\MainPage.h" />
     <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="App.xaml">
-      <SubType>Designer</SubType>
-      <FileType>Document</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-    </Xml>
-    <Xml Include="MainPage.xaml">
-      <SubType>Designer</SubType>
-      <FileType>Document</FileType>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
-    </Xml>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -299,12 +299,6 @@
     <Image Include="Assets\WideLogo.scale-100.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App.xaml.cpp">
-      <DependentUpon>App.xaml</DependentUpon>
-    </ClCompile>
-    <ClCompile Include="MainPage.xaml.cpp">
-      <DependentUpon>MainPage.xaml</DependentUpon>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -313,11 +307,19 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Sources\App.xaml.cpp" />
+    <ClCompile Include="Sources\MainPage.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="MainPage.xaml.idl">
-      <DependentUpon>MainPage.xaml</DependentUpon>
-    </Midl>
+    <Midl Include="MIDL\MainPage.xaml.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="XAML\App.xaml">
+      <FileType>Document</FileType>
+    </Xml>
+    <Xml Include="XAML\MainPage.xaml">
+      <FileType>Document</FileType>
+    </Xml>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
