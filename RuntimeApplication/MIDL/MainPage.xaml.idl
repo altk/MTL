@@ -23,7 +23,7 @@ namespace RuntimeApplication
 	[version(0x00000001)]
 	runtimeclass MainPage : Windows.UI.Xaml.Controls.Page
 	{
-		[default] interface IMainPage;
 		interface Windows.UI.Xaml.Markup.IComponentConnector;
+		[default] interface IMainPage;
 	}
 }

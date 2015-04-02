@@ -20,7 +20,6 @@ namespace ABI
 				ABI::Windows::UI::Xaml::IFrameworkElementOverrides,
 				ABI::Windows::UI::Xaml::Controls::IControlOverrides>;
 
-			MTL::ComPtr<ABI::Windows::UI::Xaml::Controls::IPage> m_page;
 			MTL::ComPtr<IInspectable> m_inner;
 			MTL::ComPtr<ABI::Windows::UI::Xaml::Controls::IPageOverrides> m_pageOverrides;
 			MTL::ComPtr<ABI::Windows::UI::Xaml::IUIElementOverrides> m_uiElementOverrides;
