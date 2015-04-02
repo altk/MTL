@@ -45,6 +45,8 @@ namespace RuntimeApplication
 		}
 		STDMETHODIMP GetXamlTypeByFullName(HSTRING string, IXamlType ** xamlType) noexcept override final
 		{
+			UINT32 length;
+			OutputDebugStringW(WindowsGetStringRawBuffer(string, &length));
 			return S_OK;
 		}
 		STDMETHODIMP GetXmlnsDefinitions(UINT32 *, XmlnsDefinition ** xmlnsDefinition) noexcept override final
