@@ -35,8 +35,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App.xaml.cpp" />
-    <ClCompile Include="MainPage.xaml.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Sources\App.xaml.cpp">
       <Filter>Sources</Filter>
@@ -47,7 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="App.xaml.h" />
     <ClInclude Include="Headers\App.xaml.h">
       <Filter>Headers</Filter>
     </ClInclude>

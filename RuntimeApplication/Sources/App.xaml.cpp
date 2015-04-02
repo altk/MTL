@@ -17,20 +17,21 @@ using namespace ABI::RuntimeApplication;
 
 namespace RuntimeApplication
 {
-	class App sealed : public RuntimeClass<IApplicationOverrides, IXamlMetadataProvider, IAgileObject>
+	class App sealed : public HeapClass<RuntimeClassBase<IApplicationOverrides, IXamlMetadataProvider, IAgileObject>> 
 	{
+		ComPtr<IInspectable> m_inspectable;
 		ComPtr<IApplication> m_application;
 		ComPtr<IApplicationOverrides> m_applicationOverrides;
 	public:
 		App() noexcept
+			: m_application()
+			, m_inspectable()
+			, m_applicationOverrides()
 		{
 			ComPtr<IApplicationFactory> applicationFactory;
 			VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), applicationFactory.GetAddressOf()));
-
-			ComPtr<IInspectable> inspectable;
-			VERIFY_SUCCEEDED(applicationFactory->CreateInstance(static_cast<IApplicationOverrides *>(this), inspectable.GetAddressOf(), m_application.GetAddressOf()));
-
-			m_applicationOverrides = inspectable.As<IApplicationOverrides>();
+			VERIFY_SUCCEEDED(applicationFactory->CreateInstance(static_cast<IApplicationOverrides *>(this), m_inspectable.GetAddressOf(), m_application.GetAddressOf()));
+			m_applicationOverrides = m_inspectable.As<IApplicationOverrides>();
 		}
 
 		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
@@ -101,12 +102,12 @@ namespace RuntimeApplication
 		}
 	};
 
-	class ApplicationInitializationCallback sealed : public StackAllocationStrategy<IApplicationInitializationCallback>
+	class ApplicationInitializationCallback sealed : public StackClass<ComClassBase<IApplicationInitializationCallback>>
 	{
 	public:
 		STDMETHODIMP Invoke(IApplicationInitializationCallbackParams *) noexcept override final
 		{
-			//App();
+			ComPtr<IApplicationOverrides> app(new App());
 			return S_OK;
 		}
 	};
@@ -118,12 +119,6 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 
 	ComPtr<IApplicationStatics> applicationStatics;
 	VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), applicationStatics.GetAddressOf()));
-
-	auto hs = sizeof(IApplicationInitializationCallback);
-
-	auto a = sizeof(RuntimeApplication::ApplicationInitializationCallback);
-
-	static_assert(sizeof(IApplicationInitializationCallback) == sizeof(RuntimeApplication::ApplicationInitializationCallback), "ASSERT");
 
 	RuntimeApplication::ApplicationInitializationCallback callback;
 	applicationStatics->Start(&callback);
