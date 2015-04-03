@@ -7,18 +7,16 @@ namespace ABI
 	namespace RuntimeApplication
 	{
 		class MainPage sealed : public MTL::HeapClass < MTL::RuntimeClassBase < IMainPage,
-			Windows::UI::Xaml::Markup::IComponentConnector,
-			ABI::Windows::UI::Xaml::Controls::IPageOverrides,
-			ABI::Windows::UI::Xaml::IUIElementOverrides,
-			ABI::Windows::UI::Xaml::IFrameworkElementOverrides,
-			ABI::Windows::UI::Xaml::Controls::IControlOverrides >>
+														ABI::Windows::UI::Xaml::Controls::IPageOverrides,
+														ABI::Windows::UI::Xaml::IUIElementOverrides,
+														ABI::Windows::UI::Xaml::IFrameworkElementOverrides,
+														ABI::Windows::UI::Xaml::Controls::IControlOverrides >>
 		{
 			using base = MTL::RuntimeClassBase<IMainPage,
-				Windows::UI::Xaml::Markup::IComponentConnector,
-				ABI::Windows::UI::Xaml::Controls::IPageOverrides,
-				ABI::Windows::UI::Xaml::IUIElementOverrides,
-				ABI::Windows::UI::Xaml::IFrameworkElementOverrides,
-				ABI::Windows::UI::Xaml::Controls::IControlOverrides>;
+											   ABI::Windows::UI::Xaml::Controls::IPageOverrides,
+											   ABI::Windows::UI::Xaml::IUIElementOverrides,
+											   ABI::Windows::UI::Xaml::IFrameworkElementOverrides,
+											   ABI::Windows::UI::Xaml::Controls::IControlOverrides>;
 
 			MTL::ComPtr<IInspectable> m_inner;
 			MTL::ComPtr<ABI::Windows::UI::Xaml::Controls::IPageOverrides> m_pageOverrides;
@@ -57,10 +55,6 @@ namespace ABI
 			STDMETHODIMP GetRuntimeClassName(HSTRING *result) noexcept override final
 			{
 				return WindowsCreateString(RuntimeClass_RuntimeApplication_MainPage, _countof(RuntimeClass_RuntimeApplication_MainPage), result);
-			}
-			STDMETHODIMP Connect(INT32, IInspectable *) noexcept override final
-			{
-				return S_OK;
 			}
 
 			STDMETHODIMP OnNavigatedTo(ABI::Windows::UI::Xaml::Navigation::INavigationEventArgs *e) noexcept override final
