@@ -36,8 +36,8 @@ namespace MTL
 	template <typename Interface>
 	class RemoveAddRefRelease : public Interface
 	{
-		STDMETHODIMP_(ULONG) AddRef();
-		STDMETHODIMP_(ULONG) Release();
+		STDMETHODIMP_(ULONG) AddRef() noexcept;
+		STDMETHODIMP_(ULONG) Release() noexcept;
 	};
 #pragma endregion
 
@@ -318,11 +318,11 @@ namespace MTL
 		HeapClass() noexcept {}
 		virtual ~HeapClass() noexcept {}
 	public:
-		STDMETHODIMP_(ULONG) AddRef() noexcept override final
+		STDMETHODIMP_(ULONG) AddRef() noexcept override 
 		{
 			return InterlockedIncrement(&m_references);
 		}
-		STDMETHODIMP_(ULONG) Release() noexcept override final
+		STDMETHODIMP_(ULONG) Release() noexcept override 
 		{
 			auto const remaining = InterlockedDecrement(&m_references);
 			if (0 == remaining)
@@ -342,11 +342,11 @@ namespace MTL
 		void operator delete(void *) = delete;
 		void operator delete[](void *) = delete;
 
-		STDMETHODIMP_(ULONG) AddRef() noexcept override final
+		STDMETHODIMP_(ULONG) AddRef() noexcept override 
 		{
 			return 1;
 		}
-		STDMETHODIMP_(ULONG) Release() noexcept override final
+		STDMETHODIMP_(ULONG) Release() noexcept override 
 		{
 			return 1;
 		}

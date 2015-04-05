@@ -3,6 +3,7 @@
 #include <windows.ui.xaml.markup.h>
 #include <windows.ui.xaml.interop.h>
 #include "MainPage.h"
+#include "DependencyObject.h"
 
 using namespace MTL::Wrappers;
 using namespace MTL;
@@ -17,7 +18,7 @@ using namespace ABI::RuntimeApplication;
 
 namespace RuntimeApplication
 {
-	class App sealed : public HeapClass<RuntimeClassBase<IApplicationOverrides, IXamlMetadataProvider, IAgileObject>> 
+	class App sealed : public HeapClass<RuntimeClassBase<IApplicationOverrides, IXamlMetadataProvider, IAgileObject>>
 	{
 		ComPtr<IInspectable> m_inspectable;
 		ComPtr<IApplication> m_application;
@@ -99,6 +100,20 @@ namespace RuntimeApplication
 			VERIFY_SUCCEEDED(window->put_Content(mainPage.As<IUIElement>().Get()));
 
 			VERIFY_SUCCEEDED(window->Activate());
+
+			ComPtr<IFrameworkElementStatics> frameworkElementStatics;
+			VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_FrameworkElement).Get(), frameworkElementStatics.GetAddressOf()));
+
+			ComPtr<IDependencyProperty> dependencyProperty;
+			VERIFY_SUCCEEDED(frameworkElementStatics->get_DataContextProperty(dependencyProperty.GetAddressOf()));
+
+			ComPtr<DependencyObject> dependencyObject;
+			DependencyObject::ActivateInstance(dependencyObject.GetAddressOf());
+
+			dependencyObject->SetValue(dependencyProperty.Get(), window.Get());
+
+			ComPtr<IInspectable> value;
+			dependencyObject->GetValue(dependencyProperty.Get(), value.GetAddressOf());
 
 			return S_OK;
 		}
