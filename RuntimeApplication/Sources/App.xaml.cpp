@@ -4,6 +4,7 @@
 #include <windows.ui.xaml.interop.h>
 #include "MainPage.h"
 #include "DependencyObject.h"
+#include "UserControl.h"
 
 using namespace MTL::Wrappers;
 using namespace MTL;
@@ -107,15 +108,8 @@ namespace RuntimeApplication
 			ComPtr<IDependencyProperty> dependencyProperty;
 			VERIFY_SUCCEEDED(frameworkElementStatics->get_DataContextProperty(dependencyProperty.GetAddressOf()));
 
-			ComPtr<DependencyObject> dependencyObject;
-			DependencyObject::ActivateInstance(dependencyObject.GetAddressOf());
-
-			dependencyObject->SetValue(dependencyProperty.Get(), window.Get());
-
-			ComPtr<IInspectable> value;
-			dependencyObject->GetValue(dependencyProperty.Get(), value.GetAddressOf());
-
-			ASSERT(window.Get() == value.Get());
+			ComPtr<RuntimeApplication::UserControl> dependencyObject;
+			RuntimeApplication::UserControl::ActivateInstance(dependencyObject.GetAddressOf());
 
 			return S_OK;
 		}

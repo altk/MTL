@@ -45,6 +45,9 @@
     <ClCompile Include="Sources\DependencyObject.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\UserControl.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -55,6 +58,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Headers\DependencyObject.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\UserControl.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

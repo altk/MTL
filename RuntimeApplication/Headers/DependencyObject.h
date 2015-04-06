@@ -7,10 +7,8 @@ namespace RuntimeApplication
 	class DependencyObject : public MTL::HeapClass < MTL::RuntimeClassBase<ABI::Windows::UI::Xaml::IDependencyObject> >
 	{
 	protected:
-		using BaseInterface = IDependencyObject;
-
 		MTL::ComPtr<IInspectable> m_inner;
-		MTL::ComPtr<IDependencyObject> m_base;
+		MTL::ComPtr<IInspectable> m_base;
 	public:
 		DependencyObject() noexcept = default;
 		virtual ~DependencyObject() noexcept = default;

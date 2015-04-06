@@ -284,6 +284,7 @@
     <ClInclude Include="Headers\App.xaml.h" />
     <ClInclude Include="Headers\DependencyObject.h" />
     <ClInclude Include="Headers\MainPage.h" />
+    <ClInclude Include="Headers\UserControl.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -311,6 +312,7 @@
     <ClCompile Include="Sources\App.xaml.cpp" />
     <ClCompile Include="Sources\DependencyObject.cpp" />
     <ClCompile Include="Sources\MainPage.cpp" />
+    <ClCompile Include="Sources\UserControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MIDL\MainPage.xaml.idl" />
