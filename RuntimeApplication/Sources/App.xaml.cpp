@@ -20,19 +20,19 @@ namespace RuntimeApplication
 {
 	class App sealed : public HeapClass<RuntimeClassBase<IApplicationOverrides, IXamlMetadataProvider, IAgileObject>>
 	{
-		ComPtr<IInspectable> m_inspectable;
+		ComPtr<IInspectable> m_inner;
 		ComPtr<IApplication> m_application;
 		ComPtr<IApplicationOverrides> m_applicationOverrides;
 	public:
 		App() noexcept
 			: m_application()
-			, m_inspectable()
+			, m_inner()
 			, m_applicationOverrides()
 		{
 			ComPtr<IApplicationFactory> applicationFactory;
 			VERIFY_SUCCEEDED(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_Application).Get(), applicationFactory.GetAddressOf()));
-			VERIFY_SUCCEEDED(applicationFactory->CreateInstance(static_cast<IApplicationOverrides *>(this), m_inspectable.GetAddressOf(), m_application.GetAddressOf()));
-			m_applicationOverrides = m_inspectable.As<IApplicationOverrides>();
+			VERIFY_SUCCEEDED(applicationFactory->CreateInstance(static_cast<IApplicationOverrides *>(this), m_inner.GetAddressOf(), m_application.GetAddressOf()));
+			m_applicationOverrides = m_inner.As<IApplicationOverrides>();
 		}
 
 		STDMETHODIMP GetRuntimeClassName(HSTRING*) noexcept override final
@@ -114,6 +114,8 @@ namespace RuntimeApplication
 
 			ComPtr<IInspectable> value;
 			dependencyObject->GetValue(dependencyProperty.Get(), value.GetAddressOf());
+
+			ASSERT(window.Get() == value.Get());
 
 			return S_OK;
 		}

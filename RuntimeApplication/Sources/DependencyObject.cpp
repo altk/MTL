@@ -11,11 +11,9 @@ STDMETHODIMP DependencyObject::ActivateInstance(DependencyObject ** result) noex
 
 	ComPtr<ABI::Windows::UI::Xaml::IDependencyObjectFactory> factory;
 	Windows::Foundation::GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Xaml_DependencyObject).Get(), factory.GetAddressOf());
-
-	ComPtr<ABI::Windows::UI::Xaml::IDependencyObject> dependencyObject;
-	factory->CreateInstance(*result, (*result)->m_inspectable.GetAddressOf(), dependencyObject.GetAddressOf());
-
-	return E_NOTIMPL;
+	factory->CreateInstance(*result, (*result)->m_inner.GetAddressOf(), (*result)->m_base.GetAddressOf());
+	
+	return S_OK;
 }
 
 STDMETHODIMP DependencyObject::GetRuntimeClassName(HSTRING * className)
@@ -25,12 +23,12 @@ STDMETHODIMP DependencyObject::GetRuntimeClassName(HSTRING * className)
 
 STDMETHODIMP DependencyObject::GetValue(ABI::Windows::UI::Xaml::IDependencyProperty * dp, IInspectable ** returnValue)
 {
-	return GetBaseObject()->GetValue(dp, returnValue);
+	return m_base->GetValue(dp, returnValue);
 }
 
 STDMETHODIMP DependencyObject::SetValue(ABI::Windows::UI::Xaml::IDependencyProperty * dp, IInspectable * value)
 {
-	return GetBaseObject()->SetValue(dp, value);
+	return m_base->SetValue(dp, value);
 }
 
 STDMETHODIMP DependencyObject::ClearValue(ABI::Windows::UI::Xaml::IDependencyProperty * dp)

@@ -9,24 +9,8 @@ namespace RuntimeApplication
 	protected:
 		using BaseInterface = IDependencyObject;
 
-		MTL::ComPtr<IInspectable> m_inspectable;
-
-		BaseInterface* GetBaseObject() noexcept
-		{
-			BaseInterface* ptr;
-			m_inspectable->QueryInterface(&ptr);
-
-			if (m_inspectable.Get() == ptr)
-			{
-				auto a = 5;
-			}
-			/*if (*m_inspectable.GetAddressOf() == ptr)
-			{
-				auto a = 5;
-			}*/
-
-			return ptr;
-		}
+		MTL::ComPtr<IInspectable> m_inner;
+		MTL::ComPtr<IDependencyObject> m_base;
 	public:
 		DependencyObject() noexcept = default;
 		virtual ~DependencyObject() noexcept = default;
