@@ -281,6 +281,8 @@
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Headers\MACRO.h" />
+    <ClInclude Include="..\Headers\MTL.h" />
     <ClInclude Include="Headers\App.xaml.h" />
     <ClInclude Include="Headers\DependencyObject.h" />
     <ClInclude Include="Headers\MainPage.h" />

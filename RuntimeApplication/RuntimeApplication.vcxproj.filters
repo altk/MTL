@@ -63,6 +63,12 @@
     <ClInclude Include="Headers\UserControl.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\Headers\MACRO.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Headers\MTL.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\WideLogo.scale-100.png">
